@@ -14,8 +14,9 @@
 %token OPENCORCH_ OPENLLAVE_ OPENPAR_ CLOSECORCH_ CLOSELLAVE_ CLOSEPAR_ SEMICOLON_ COMA_ PUNTO_
 %token FOR_ IF_ ELSE_ WHILE_ STRUCT_
 %token READ_ RETURN_ PRINT_ 
-%token TRUE_ FALSE_
-%token CTE_ ID_ BOOL_
+%token TRUE_ FALSE_ BOOL_
+%token <cent> CTE_
+%token <ident> ID_
 
 %%
 
