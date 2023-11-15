@@ -17,6 +17,7 @@
 %token TRUE_ FALSE_ BOOL_
 %token <cent> CTE_
 %token <ident> ID_
+%type <cent> tipoSimp
 
 %%
 
@@ -37,8 +38,8 @@ declaVar
        | STRUCT_ OPENLLAVE_ listCamp CLOSELLAVE_ ID_ SEMICOLON_
        ;
 tipoSimp
-       : INT_
-       | BOOL_
+       : INT_ {$$ = T_ENTERO;}
+       | BOOL_ {$$ = T_LOGICO;}
        ;
 listCamp
        : tipoSimp ID_ SEMICOLON_ 
