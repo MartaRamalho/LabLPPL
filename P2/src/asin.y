@@ -145,7 +145,17 @@ expreSufi
 		{
 			$$.t = T_ERROR;
 			SIMB sim = obtTdS($1);
-			/* Falta hacer el resto de este */
+			CAMP cam = obtTDR(sim.ref, $3)
+			if (sim.t == T_ERROR) {
+				yyerror("No existe ninguna variable con ese identificador.");
+			} else if (sim.t != T_RECORD) {
+				yyerror("La variable no es del tipo apropiado.");
+			{ else if (cam.t == T_ERROR) {	/* Falta hacer el resto de este */
+				yyerror("No existe ninguna variable con ese identificador en ese campo.")
+			} else {
+				$$.t = cam.t
+			}
+			
 		}
        | ID_ OPENCORCH_ expre CLOSECORCH_
 		{
@@ -168,8 +178,7 @@ expreSufi
 
 			if (sim.t == T_ERROR) { 
 				yyerror("No existe ninguna variable con ese identificador."); 
-			}
-			if (inf.t == T_ERROR) { 
+			} else if (inf.t == T_ERROR) { 
 				yyerror("No existe ninguna funcion con ese identificador."); 
 			} else {
 				$$.t = inf.t;
@@ -185,23 +194,9 @@ paramAct
        :
        | listParamAct      
        ;
-listParamAct			/* Comprobar el tema de los guiones */
+listParamAct			
        : expre           
-		// {
-		// 		$$.ref = insTdD(-1, $1);
-		// 		$$.t = TALLA_TIPO_SIMPLE;
-		// }
        | expre COMA_ listParamAct       
-		// {
-		// 	INF inf = obtTdD($3) 
-		// 	if(inf.t == T_ERROR){
-		// 		yyerror("Error en los parámetros actuales");
-		// 	}
-		// 	else{
-		// 		$$.ref = $3.ref;
-		// 		$$.t = $3.t + TALLA_TIPO_SIMPLE;
-		// 	}
-		// }
        ;
 opLogic
        : OPAND_              {$$ = OP_AND;} 
