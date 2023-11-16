@@ -142,8 +142,39 @@ expreSufi
 			}
 		}
        | ID_ PUNTO_ ID_
+		{
+			$$.t = T_ERROR;
+			SIMB sim = obtTdS($1);
+			/* Falta hacer el resto de este */
+		}
        | ID_ OPENCORCH_ expre CLOSECORCH_
+		{
+			$$.t = T_ERROR;
+			SIMB sim = obtTdS($1);
+			if (sim.t == T_ERROR) {
+				yyerror("No existe ninguna variable con ese identificador.");
+			} else if ($3.t != T_ENTERO) {
+				yyerror("El indice para acceder a un vector debe ser un entero 0 o positivo.");
+			} else { 
+				DIM dim = obtTdA(sim.ref);
+				$$.t = dim.telem;
+			}
+		}
        | ID_ OPENPAR_ paramAct CLOSEPAR_
+		{
+			$$.t = T_ERROR;
+			SIMB sim = obtTdS($1);
+			INF inf = obtTdD(sim.ref);
+
+			if (sim.t == T_ERROR) { 
+				yyerror("No existe ninguna variable con ese identificador."); 
+			}
+			if (inf.t == T_ERROR) { 
+				yyerror("No existe ninguna funcion con ese identificador."); 
+			} else {
+				$$.t = inf.t;
+			}
+		}
        ;
 const
        : CTE_               {$$.t = T_ENTERO} 
@@ -154,7 +185,7 @@ paramAct
        :
        | listParamAct      
        ;
-listParamAct
+listParamAct			/* Comprobar el tema de los guiones */
        : expre           
 		// {
 		// 		$$.ref = insTdD(-1, $1);
