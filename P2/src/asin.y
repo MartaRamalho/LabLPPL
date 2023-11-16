@@ -126,48 +126,48 @@ expreSufi
        | ID_ OPENPAR_ paramAct CLOSEPAR_
        ;
 const
-       : CTE_
-       | TRUE_
-       | FALSE_
+       : CTE_              /*  */
+       | TRUE_             /*  */
+       | FALSE_            /*  */
        ;
 paramAct
        :
-       | listParamAct
+       | listParamAct      /*  */
        ;
 listParamAct
-       : expre
-       | expre COMA_ listParamAct
+       : expre             /*  */
+       | expre COMA_ listParamAct       /*  */
        ;
 opLogic
-       : OPAND_
-       | OPOR_
+       : OPAND_             /* {$$ = OP_AND;} */
+       | OPOR_              /* {$$ = OP_OR;} */
        ;
 opIgual
-       : COMPIGUAL_
-       | COMPDIF_
+       : COMPIGUAL_         /* {$$ = OP_IGUAL;} */
+       | COMPDIF_           /* {$$ = OP_NOTIGUAL;} */
        ;
 opRel
-       : COMPMENOR_
-       | COMPMENORIG_
-       | COMPMAYOR_
-       | COMPMAYORIG_
+       : COMPMENOR_         /* {$$ = OP_MENOR;} */
+       | COMPMENORIG_       /* {$$ = OP_MENORIG;} */
+       | COMPMAYOR_         /* {$$ = OP_MAYOR;} */
+       | COMPMAYORIG_       /* {$$ = OP_MAYORIG;} */
        ;
 opAd 
-       : OPSUMA_
-       | OPRESTA_
+       : OPSUMA_             /* {$$ = OP_SUMA;} */
+       | OPRESTA_            /* {$$ = OP_RESTA;} */
        ;
 opMul
-       : OPMULT_
-       | OPDIV_
+       : OPMULT_             /* {$$ = OP_MULT;} */
+       | OPDIV_              /* {$$ = OP_DIV;} */
        ;
 opUna
-       : OPSUMA_
-       | OPRESTA_
-       | OPNOT_
+       : OPSUMA_             /* {$$ = OP_SUMA;}  */
+       | OPRESTA_            /* {$$ = OP_RESTA;}  */
+       | OPNOT_              /* {$$ = OP_NOT;}  */
        ;
 opIncre
-       : OPINCREASE_
-       | OPDECREASE_
+       : OPINCREASE_         /* {$$ = OP_INCR;} */
+       | OPDECREASE_         /* {$$ = OP_DECR;} */
        ;
 
 
