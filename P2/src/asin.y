@@ -126,13 +126,13 @@ expreSufi
        | ID_ OPENPAR_ paramAct CLOSEPAR_
        ;
 const
-       : CTE_              /*  */
-       | TRUE_             /*  */
-       | FALSE_            /*  */
+       : CTE_              /* {$$.t = T_ENTERO} */
+       | TRUE_             /* {$$.t = T_LOGICO}  */
+       | FALSE_            /* {$$.t = T_LOGICO}  */
        ;
 paramAct
        :
-       | listParamAct      /*  */
+       | listParamAct      
        ;
 listParamAct
        : expre             /*  */
