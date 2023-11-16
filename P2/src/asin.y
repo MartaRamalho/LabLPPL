@@ -117,18 +117,40 @@ expreUna
        | opIncre ID_
        ;
 expreSufi
-       : const
-       | OPENPAR_ expre CLOSEPAR_
+       : const                    {$$.t = $1.t;}
+       | OPENPAR_ expre CLOSEPAR_ {$$.t = $2.t;}
        | ID_
+              {
+			SIMB sim = obtTdS($1);
+		 	if (sim.t == T_ERROR) {
+				 yyerror("No existe ninguna variable con ese identificador.");
+                             $$.t = T_ERROR;
+			 } else { 
+				 $$.t = sim.t;
+			 }
+		}
        | ID_ opIncre
+              {
+			SIMB sim = obtTdS($1);
+			
+			$$.t = T_ERROR;
+		
+			if (sim.t == T_ERROR) {
+				yyerror("No existe ninguna variable con ese identificador.");
+			} else if (sim.t == T_ENTERO) {
+				$$.t = sim.t;
+			} else {
+				yyerror("Incompatibilidad de tipos, solo se puede aplicar el operador \"++\" o \"--\" a una expresion entera.");
+			}
+		}
        | ID_ PUNTO_ ID_
        | ID_ OPENCORCH_ expre CLOSECORCH_
        | ID_ OPENPAR_ paramAct CLOSEPAR_
        ;
 const
-       : CTE_              /* {$$.t = T_ENTERO} */
-       | TRUE_             /* {$$.t = T_LOGICO}  */
-       | FALSE_            /* {$$.t = T_LOGICO}  */
+       : CTE_               {$$.t = T_ENTERO} 
+       | TRUE_              {$$.t = T_LOGICO}  
+       | FALSE_             {$$.t = T_LOGICO}  
        ;
 paramAct
        :
@@ -139,35 +161,35 @@ listParamAct
        | expre COMA_ listParamAct       /*  */
        ;
 opLogic
-       : OPAND_             /* {$$ = OP_AND;} */
-       | OPOR_              /* {$$ = OP_OR;} */
+       : OPAND_              {$$ = OP_AND;} 
+       | OPOR_               {$$ = OP_OR;} 
        ;
 opIgual
-       : COMPIGUAL_         /* {$$ = OP_IGUAL;} */
-       | COMPDIF_           /* {$$ = OP_NOTIGUAL;} */
+       : COMPIGUAL_          {$$ = OP_IGUAL;} 
+       | COMPDIF_            {$$ = OP_NOTIGUAL;} 
        ;
 opRel
-       : COMPMENOR_         /* {$$ = OP_MENOR;} */
-       | COMPMENORIG_       /* {$$ = OP_MENORIG;} */
-       | COMPMAYOR_         /* {$$ = OP_MAYOR;} */
-       | COMPMAYORIG_       /* {$$ = OP_MAYORIG;} */
+       : COMPMENOR_          {$$ = OP_MENOR;} 
+       | COMPMENORIG_        {$$ = OP_MENORIG;} 
+       | COMPMAYOR_          {$$ = OP_MAYOR;} 
+       | COMPMAYORIG_        {$$ = OP_MAYORIG;} 
        ;
 opAd 
-       : OPSUMA_             /* {$$ = OP_SUMA;} */
-       | OPRESTA_            /* {$$ = OP_RESTA;} */
+       : OPSUMA_             {$$ = OP_SUMA;} 
+       | OPRESTA_            {$$ = OP_RESTA;} 
        ;
 opMul
-       : OPMULT_             /* {$$ = OP_MULT;} */
-       | OPDIV_              /* {$$ = OP_DIV;} */
+       : OPMULT_             {$$ = OP_MULT;} 
+       | OPDIV_              {$$ = OP_DIV;} 
        ;
 opUna
-       : OPSUMA_             /* {$$ = OP_SUMA;}  */
-       | OPRESTA_            /* {$$ = OP_RESTA;}  */
-       | OPNOT_              /* {$$ = OP_NOT;}  */
+       : OPSUMA_             {$$ = OP_SUMA;}  
+       | OPRESTA_            {$$ = OP_RESTA;}  
+       | OPNOT_              {$$ = OP_NOT;}  
        ;
 opIncre
-       : OPINCREASE_         /* {$$ = OP_INCR;} */
-       | OPDECREASE_         /* {$$ = OP_DECR;} */
+       : OPINCREASE_         {$$ = OP_INCR;} 
+       | OPDECREASE_         {$$ = OP_DECR;} 
        ;
 
 
