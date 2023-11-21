@@ -70,19 +70,31 @@ tipoSimp
        | BOOL_ {$$ = T_LOGICO;}
        ;
 listCamp
-       : tipoSimp ID_ SEMICOLON_ 
-       | listCamp tipoSimp ID_ SEMICOLON_
+       : tipoSimp ID_ SEMICOLON_ {
+		if(!insTdS($2, VARIABLE, $1, niv, dvar, -1)){
+			yyerror("Identificador repetido");
+		} else {
+			dvar += TALLA_TIPO_SIMPLE;
+		}
+       }
+       | listCamp tipoSimp ID_ SEMICOLON_ {// falta}
        ;
 declaFunc
-       : tipoSimp ID_ OPENPAR_ paramForm CLOSEPAR_ OPENLLAVE_ declaVarLocal listInst RETURN_ expre SEMICOLON_ CLOSELLAVE_
+       : tipoSimp ID_ OPENPAR_ paramForm CLOSEPAR_ OPENLLAVE_ declaVarLocal listInst RETURN_ expre SEMICOLON_ CLOSELLAVE_ {// falta}
        ;
 paramForm
-       : 
-       | listParamForm
+       : {
+		$$.ref = insTdD(-1, T_VACIO);
+		$$.talla = 0;
+       }
+       | listParamForm {
+		$$.ref = $1.ref;
+		$$.talla = $1.talla;
+       }
        ;
 listParamForm
-       : tipoSimp ID_
-       | tipoSimp ID_ COMA_ listParamForm
+       : tipoSimp ID_ {// falta}
+       | tipoSimp ID_ COMA_ listParamForm {// falta}
        ;
 declaVarLocal
        : 
