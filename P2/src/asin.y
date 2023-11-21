@@ -86,9 +86,42 @@ instIter
        : WHILE_ OPENPAR_ expre CLOSEPAR_ inst
        ;
 expre
-       : expreLogic
+       : expreLogic {$$.t=$1.t;}
        | ID_ OPIGUAL_ expre
+              {      
+                     SIMB sim = obtTdS($1);
+                     $$.t = T_ERROR;
+                     if (sim.t == T_ERROR) yyerror("Objeto no declarado");
+                     else if (! (((sim.t == T_ENTERO) && ($3.t == T_ENTERO)) || ((sim.t == T_LOGICO) && ($3.t == T_LOGICO))) &&
+                                   ($3.t != T_ERROR))
+                            yyerror("Error de tipos en la ‘instrucción de asignación’");
+                     else $$.t = sim.t;
+              }
+
        | ID_ OPENCORCH_ expre CLOSECORCH_ OPIGUAL_ expre
+              {      
+                     SIMB sim = obtTdS($1);
+                     $$.t = T_ERROR;
+                     DIM dim;
+                     if(sim.t != T_ARRAY){
+                            yyerror("La variable no es un array, no se puede acceder mediante índices.");
+                     }
+                     else{
+                            dim = obtTdA(sim.ref);
+                     }
+
+                     if($3.t != T_ERROR && $6.t != T_ERROR){
+                            if(sim.t==T_ERROR){
+                                   yyerror("Objeto no declarado");
+                            }
+                            else if($3.t != T_ENTERO){
+                                   yyerror("No se puede acceder al índice puesto que no es un entero 0 o positivo");
+                            }
+                            else if($6 != dim.telem){
+                                   yyerror("Tipos incompatibles");
+                            }
+                     }
+              }
        | ID_ PUNTO_ ID_ OPIGUAL_ expre
        ;
 expreLogic
