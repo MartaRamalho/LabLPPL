@@ -150,7 +150,7 @@ expreSufi
 				yyerror("No existe ninguna variable con ese identificador.");
 			} else if (sim.t != T_RECORD) {
 				yyerror("La variable no es del tipo apropiado.");
-			{ else if (cam.t == T_ERROR) {	/* Falta hacer el resto de este */
+			} else if (cam.t == T_ERROR) {	/* Falta hacer el resto de este */
 				yyerror("No existe ninguna variable con ese identificador en ese campo.")
 			} else {
 				$$.t = cam.t
