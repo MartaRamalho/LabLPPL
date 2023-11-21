@@ -77,31 +77,52 @@ instExpre
        ;
 instEntSal
        : READ_ OPENPAR_ ID_ CLOSEPAR_ SEMICOLON_
+       {
+              SIMB sim = obtTdS($3);
+              if(sim.t == T_ERROR){
+                     yyerror("Objeto no declarado.");
+              }
+              else if(sim.t != T_ENTERO){
+                     yyerror("El objeto a leer no es de tipo entero.");
+              }
+       }
        | PRINT_ OPENPAR_ expre CLOSEPAR_ SEMICOLON_
+       {
+              else if($3.t != T_ERROR && $3.t != T_ENTERO){
+                     yyerror("El objeto a leer no es de tipo entero.");
+              }
+       }
        ;
 instSelec
        : IF_ OPENPAR_ expre CLOSEPAR_ inst ELSE_ inst
+       {
+              if($3.t != T_ERROR && $3.t != T_LOGICO){
+                     yyerror("La expresión debe ser de tipo lógico.");
+              }
+       }
        ;
 instIter
        : WHILE_ OPENPAR_ expre CLOSEPAR_ inst
+       {
+              if($3.t != T_ERROR && $3.t!=T_LOGICO){
+                     yyerror("La expresión debe ser de tipo lógico.");
+              }
+       }
        ;
 expre
        : expreLogic {$$.t=$1.t;}
        | ID_ OPIGUAL_ expre
               {      
                      SIMB sim = obtTdS($1);
-                     $$.t = T_ERROR;
                      if (sim.t == T_ERROR) yyerror("Objeto no declarado");
                      else if (! (((sim.t == T_ENTERO) && ($3.t == T_ENTERO)) || ((sim.t == T_LOGICO) && ($3.t == T_LOGICO))) &&
                                    ($3.t != T_ERROR))
                             yyerror("Error de tipos en la ‘instrucción de asignación’");
-                     else $$.t = sim.t;
               }
 
        | ID_ OPENCORCH_ expre CLOSECORCH_ OPIGUAL_ expre
               {      
                      SIMB sim = obtTdS($1);
-                     $$.t = T_ERROR;
                      DIM dim;
                      if(sim.t != T_ARRAY){
                             yyerror("La variable no es un array, no se puede acceder mediante índices.");
@@ -117,37 +138,143 @@ expre
                             else if($3.t != T_ENTERO){
                                    yyerror("No se puede acceder al índice puesto que no es un entero 0 o positivo");
                             }
-                            else if($6 != dim.telem){
+                            else if($6.t != dim.telem){
                                    yyerror("Tipos incompatibles");
                             }
                      }
               }
        | ID_ PUNTO_ ID_ OPIGUAL_ expre
+              {
+                     SIMB sim = obtTdS($1);
+                     CAMP reg;
+                     if(sim.t != T_RECORD){
+                            yyerror("La variable no es un registro.");
+                     }
+                     else{
+                            reg = obtTdR(sim.ref);
+                     }
+
+              }
        ;
-expreLogic
-       : expreIgual
+expreLogic 
+       : expreIgual {$$.t=$1.t;}
        | expreLogic opLogic expreIgual
+              {
+                     $$.t = T_ERROR;
+                     if ($1.t != T_ERROR && $3.t != T_ERROR) {
+                            if($1.t != T_LOGICO && $3.t != T_LOGICO){
+                                   yyerror("Incompatibilidad de tipos. Ambos deben de ser expresiones lógicas.");
+                            }
+                            else{
+                                   $$.t=T_LOGICO;
+                            }
+                     }
+              }
        ;
 expreIgual
-       : expreRel
+       : expreRel {$$.t=$1.t;}
        | expreIgual opIgual expreRel
+              {
+                     $$.t = T_ERROR;
+                     if ($1.t != T_ERROR && $3.t != T_ERROR) {
+                            if($1.t != $3.t){
+                                   yyerror("Incompatibilidad de tipos. Ambas expresiones deben ser del mismo tipo");
+                            }
+                            else if($1.t != T_LOGICO && $1.t != T_ENTERO){
+                                   yyerror("Incompatibilidad de tipos. Deben ser expresiones lógicas o de enteros.");
+                            } else{
+                                   $$.t = T_LOGICO;
+                            }
+                     }
+              }
        ;
 expreRel
-       : expreAd
+       : expreAd {$$.t=$1.t;}
        | expreRel opRel expreAd
+              {
+                     $$.t = T_ERROR;
+                     if ($1.t != T_ERROR && $3.t != T_ERROR) {
+                            if($1.t != T_ENTERO && $3.t != T_ENTERO){
+                                   yyerror("Incompatibilidad de tipos. Ambos deben de ser expresiones de enteros.");
+                            }
+                            else{
+                                   $$.t=T_LOGICO;
+                            }
+                     }
+              }
        ;
 expreAd
-       : expreMul 
+       : expreMul {$$.t=$1.t;}
        | expreAd opAd expreMul
+              {
+                     $$.t = T_ERROR;
+                     if ($1.t != T_ERROR && $3.t != T_ERROR) {
+                            if($1.t != T_ENTERO && $3.t != T_ENTERO){
+                                   yyerror("Incompatibilidad de tipos. Ambos deben de ser expresiones de enteros.");
+                            }
+                            else{
+                                   $$.t=T_ENTERO;
+                            }
+                     }
+              }
        ;
 expreMul
-       : expreUna
+       : expreUna {$$.t=$1.t;}
        | expreMul opMul expreUna
+              {
+                     $$.t = T_ERROR;
+                     if ($1.t != T_ERROR && $3.t != T_ERROR) {
+                            if($1.t != T_ENTERO && $3.t != T_ENTERO){
+                                   yyerror("Incompatibilidad de tipos. Ambos deben de ser expresiones de enteros.");
+                            }
+                            else{
+                                   $$.t=T_ENTERO;
+                            }
+                     }
+              }
        ;
 expreUna 
-       : expreSufi
+       : expreSufi {$$.t=$1.t;}
        | opUna expreUna 
+              {
+                     $$.t = T_ERROR;
+                     if ($2.t != T_ERROR) {
+                            if($2.t == T_ENTERO){
+                                   if($1 == OP_NOT){
+                                          yyerror("Incompatibilidad de tipos. No se puede negar un entero.");
+                                   }
+                                   else{
+                                          $$.t = T_ENTERO;
+                                   }
+                            }
+                            else if($2.t == T_LOGICO){
+                                   if($1 != OP_NOT){
+                                          yyerror("Incompatibilidad de tipos.");
+                                   }
+                                   else{
+                                          $$.t = T_LOGICO;
+                                   }
+                            }
+                            else{
+                                   yyerror("Incompatibilidad de tipos. La expresión debe ser lógica o un entero.");
+                            }
+                     }
+              }
        | opIncre ID_
+              {
+                     SIMB sim = obtTdS($2);
+                     $$.t = T_ERROR;
+                     if(sim.t==T_ERROR){
+                            yyerror("Objeto no declarado");
+                     }
+                     else if (sim.t != T_ENTERO) {
+			       yyerror("Incompatibilidad de tipos, la expresión debe ser entera.");
+                     }
+                     else {
+                            $$.t = sim.t;
+                     }
+
+              }
        ;
 expreSufi
        : const                    {$$.t = $1.t;}
