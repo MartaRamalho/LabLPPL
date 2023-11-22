@@ -4,13 +4,19 @@
 #include "header.h"
 %}
 
+%union {
+       char *ident; /* Nombre del identificador */
+       int cent; /* Valor de la cte num´erica entera */
+}
+
 %token  OPSUMA_ OPRESTA_ OPMULT_ OPDIV_ OPAND_ OPDECREASE_ OPIGUAL_ OPINCREASE_ OPNOT_ OPOR_ 
 %token COMPDIF_ COMPIGUAL_ COMPMAYOR_ COMPMAYORIG_ COMPMENOR_ COMPMENORIG_
 %token OPENCORCH_ OPENLLAVE_ OPENPAR_ CLOSECORCH_ CLOSELLAVE_ CLOSEPAR_ SEMICOLON_ COMA_ PUNTO_
 %token FOR_ IF_ ELSE_ WHILE_ STRUCT_
 %token READ_ RETURN_ PRINT_ 
-%token TRUE_ FALSE_
-%token CTE_ ID_ INT_ BOOL_
+%token TRUE_ FALSE_ BOOL_
+%token <cent> CTE_
+%token <ident> ID_
 
 %%
 
@@ -22,7 +28,11 @@ listDecla
        | listDecla decla
        ;
 decla
-       : declaVar { dvar = }
+       : declaVar 
+       {        
+              insTdS($1, VARIABLE, $1.t, niv, dvar,-1);
+              dvar = dvar+TALLA_TIPO_SIMPLE;
+       }
        | declaFunc
        ;
 declaVar
@@ -35,11 +45,22 @@ declaVar
 		}
        }
        | tipoSimp ID_ OPENCORCH_ CTE_ CLOSECORCH_ SEMICOLON_
+       { 
+              int numelem = $4;
+              if ($4 <= 0) {
+                     yyerror("Talla inapropiada del array");
+                     numelem = 0;
+              }
+              int refe = insTdA($1, numelem);
+              if ( ! insTdS($2, VARIABLE, T_ARRAY, niv, dvar, refe) )
+                     yyerror ("Identificador repetido");
+              else dvar += numelem * TALLA_TIPO_SIMPLE;
+       }
        | STRUCT_ OPENLLAVE_ listCamp CLOSELLAVE_ ID_ SEMICOLON_
        ;
 tipoSimp
-       : INT_
-       | BOOL_
+       : INT_ { $$ = T_ENTERO; }
+       | BOOL_ { $$ = T_LOGICO; }
        ;
 listCamp
        : tipoSimp ID_ SEMICOLON_ 
