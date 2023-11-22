@@ -15,18 +15,25 @@
 %%
 
 programa
-       : listDecla
+       : listDecla { dvar = 0; niv = 0; cargaContexto(niv); }
        ;
 listDecla
        : decla
        | listDecla decla
        ;
 decla
-       : declaVar
+       : declaVar { dvar = }
        | declaFunc
        ;
 declaVar
        : tipoSimp ID_ SEMICOLON_
+       {
+		if(!insTdS($2, VARIABLE, $1, niv, dvar, -1)){
+			yyerror("Identificador repetido");
+		} else {
+			dvar += TALLA_TIPO_SIMPLE;
+		}
+       }
        | tipoSimp ID_ OPENCORCH_ CTE_ CLOSECORCH_ SEMICOLON_
        | STRUCT_ OPENLLAVE_ listCamp CLOSELLAVE_ ID_ SEMICOLON_
        ;
