@@ -17,7 +17,7 @@
 %token TRUE_ FALSE_ BOOL_
 %token <cent> CTE_
 %token <ident> ID_
-
+%type <cent> tipoSimp
 %%
 
 programa
@@ -29,10 +29,6 @@ listDecla
        ;
 decla
        : declaVar 
-       {        
-              insTdS($1, VARIABLE, $1.t, niv, dvar,-1);
-              dvar = dvar+TALLA_TIPO_SIMPLE;
-       }
        | declaFunc
        ;
 declaVar
@@ -57,6 +53,7 @@ declaVar
               else dvar += numelem * TALLA_TIPO_SIMPLE;
        }
        | STRUCT_ OPENLLAVE_ listCamp CLOSELLAVE_ ID_ SEMICOLON_
+       
        ;
 tipoSimp
        : INT_ { $$ = T_ENTERO; }
