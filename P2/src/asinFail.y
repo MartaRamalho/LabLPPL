@@ -46,7 +46,7 @@ declaVar
 			yyerror("Talla inapropiada del array");
 			numelem = 0;
 		}
-		int refe = insTda($1, numelem);
+		int refe = insTdA($1, numelem);
 		if(!insTdS($2, VARIABLE, $1, niv, dvar, -1)){
 			yyerror("Identificador repetido");
 		} else {
@@ -54,9 +54,8 @@ declaVar
 		}
        }
        | STRUCT_ OPENLLAVE_ listCamp CLOSELLAVE_ ID_ SEMICOLON_ {
-
-		int refe = insTda($1, numelem);
-		if(!insTdS($2, VARIABLE, $1, niv, dvar, -1)){
+		int ref = insTdR();
+		if(!insTdS($5, VARIABLE, $1, niv, dvar, ref)) {
 			yyerror("Identificador repetido");
 		} else {
 			dvar += $3.ref2 + TALLA_TIPO_SIMPLE;
