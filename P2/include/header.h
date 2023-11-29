@@ -17,6 +17,12 @@ typedef struct dosv  /* Estructura para las referencias prima */
   int   ref1;                                      /*  */
   int   ref2;                                      /*  */
 } DOSV;
+typedef struct nt  /* Estructura para las funciones                         */
+{
+  char *nom;                             /* Nombre de la funcion             */
+  int   tipo;                            /* Tipo del rango de la funcion     */
+}NT;
+
 
 
 /************************************* Variables externas definidas en el AL */
