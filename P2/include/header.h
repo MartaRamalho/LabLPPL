@@ -10,6 +10,14 @@
 #define TRUE  1
 #define FALSE 0
 #define TALLA_TIPO_SIMPLE 1
+/****************************************************** Structuras */
+  
+typedef struct dosv  /* Estructura para las referencias prima */
+{
+  int   ref1;                                      /*  */
+  int   ref2;                                      /*  */
+} DOSV;
+
 
 /************************************* Variables externas definidas en el AL */
 extern int yylex();
