@@ -7,6 +7,7 @@
 %union {
        char *ident; /* Nombre del identificador */
        int cent; /* Valor de la cte num´erica entera */
+       dosv refes2;
 }
 
 %token OPSUMA_ OPRESTA_ OPMULT_ OPDIV_ OPAND_ OPDECREASE_ OPIGUAL_ OPINCREASE_ OPNOT_ OPOR_ 
