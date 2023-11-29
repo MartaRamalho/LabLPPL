@@ -84,7 +84,7 @@ paramForm
        }
        | listParamForm {
 		$$.ref1 = $1.ref1;
-		$$.ref2 = $1.talla;
+		$$.ref2 = $1.ref2 - TALLA_SEGENLACES;
        }
        ;
 listParamForm
@@ -101,7 +101,10 @@ listParamForm
        ;
 declaVarLocal
        : 
-       | declaVarLocal declaVar
+       | declaVarLocal declaVar {
+		insTdS($5, VARIABLE, $1, niv, dvar, -1);
+		dvar += TALLA_SEGENLACES;
+       }
        ;
 listInst
        :
