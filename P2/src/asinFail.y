@@ -19,7 +19,7 @@
 %token <cent> CTE_
 %token <ident> ID_
 %type <cent> tipoSimp
-%type <dosv> listCamp
+%type <dosv> listCamp listParamForm
 %%
 
 programa
@@ -79,17 +79,25 @@ declaFunc
        ;
 paramForm
        : {
-		$$.ref = insTdD(-1, T_VACIO);
-		$$.talla = 0;
+		$$.ref1 = insTdD(-1, T_VACIO);
+		$$.ref2 = 0;
        }
        | listParamForm {
-		$$.ref = $1.ref;
-		$$.talla = $1.talla;
+		$$.ref1 = $1.ref1;
+		$$.ref2 = $1.talla;
        }
        ;
 listParamForm
-       : tipoSimp ID_ {// falta}
-       | tipoSimp ID_ COMA_ listParamForm {// falta}
+       : tipoSimp ID_ {
+		$$.ref1 = insTdD(-1, $1);
+		$$.ref2 = TALLA_SEGENLACES + TALLA_TIPO_SIMPLE;
+		insTdS($2, PARAMETRO, $1, niv, -$$.ref2, $$.ref1);
+	}
+       | tipoSimp ID_ COMA_ listParamForm {
+		$$.ref1 = insTdD($4.ref1, $1);
+		$$.ref2 = $4.ref2 + TALLA_TIPO_SIMPLE;
+		insTdS($2, PARAMETRO, $1, niv, -$$.ref2, $$.ref1);
+	}
        ;
 declaVarLocal
        : 
