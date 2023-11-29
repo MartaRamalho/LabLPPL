@@ -54,15 +54,12 @@ declaVar
 		}
        }
        | STRUCT_ OPENLLAVE_ listCamp CLOSELLAVE_ ID_ SEMICOLON_ {
-		if ($4 <= 0){
-			yyerror("Talla inapropiada del array");
-			numelem = 0;
-		}
-		int refe = insTda($3, numelem);
-		if(!insTdS($5, VARIABLE, $3, niv, dvar, -1)){
+
+		int refe = insTda($1, numelem);
+		if(!insTdS($2, VARIABLE, $1, niv, dvar, -1)){
 			yyerror("Identificador repetido");
 		} else {
-			dvar += $4 * TALLA_TIPO_SIMPLE;
+			dvar += $3.ref2 + TALLA_TIPO_SIMPLE;
 		}
        }
        ;
@@ -71,12 +68,14 @@ tipoSimp
        | BOOL_ {$$ = T_LOGICO;}
        ;
 listCamp
-       : tipoSimp ID_ SEMICOLON_ {
-		$$.ref1 = ($2,$1,0)
-       	}
-       | listCamp tipoSimp ID_ SEMICOLON_ {
-		
+       : listCamp tipoSimp ID_ SEMICOLON_ {
+		$$.ref1 = $1.ref1 * ($2,$1,0);
+		$$.ref2 = $1.ref2 + TALLA_TIPO_SIMPLE;
 	}
+       | tipoSimp ID_ SEMICOLON_ {
+		$$.ref1 = ($2,$1,0);
+		$$.ref2 = TALLA_TIPO_SIMPLE;
+       	}
        ;
 declaFunc
        : tipoSimp ID_ OPENPAR_ paramForm CLOSEPAR_ OPENLLAVE_ declaVarLocal listInst RETURN_ expre SEMICOLON_ CLOSELLAVE_ {// falta}
