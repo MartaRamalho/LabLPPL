@@ -19,7 +19,7 @@
 %token <cent> CTE_
 %token <ident> ID_
 %type <cent> tipoSimp
-%type <dosv> listCampos
+%type <dosv> listCamp
 %%
 
 programa
@@ -72,9 +72,11 @@ tipoSimp
        ;
 listCamp
        : tipoSimp ID_ SEMICOLON_ {
+		($2,$1,0)
+       	}
+       | listCamp tipoSimp ID_ SEMICOLON_ {
 		
-       }
-       | listCamp tipoSimp ID_ SEMICOLON_ {// falta}
+	}
        ;
 declaFunc
        : tipoSimp ID_ OPENPAR_ paramForm CLOSEPAR_ OPENLLAVE_ declaVarLocal listInst RETURN_ expre SEMICOLON_ CLOSELLAVE_ {// falta}
