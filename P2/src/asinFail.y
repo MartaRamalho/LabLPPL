@@ -42,20 +42,18 @@ declaVar
 		}
        }
        | tipoSimp ID_ OPENCORCH_ CTE_ CLOSECORCH_ SEMICOLON_ {
-		if ($4 <= 0){
-			yyerror("Talla inapropiada del array");
+		int numelem = $4; 
+		if($4<=0) {
+                	yyerror("Talla inapropiada del array");
 			numelem = 0;
 		}
 		int refe = insTdA($1, numelem);
-		if(!insTdS($2, VARIABLE, $1, niv, dvar, -1)){
-			yyerror("Identificador repetido");
-		} else {
-			dvar += $4 * TALLA_TIPO_SIMPLE;
-		}
+		if ( ! insTdS($2, VARIABLE, T_ARRAY, niv, dvar, refe) )
+                	yyerror ("Identificador repetido");
+             	else dvar += numelem * TALLA_TIPO_SIMPLE;
        }
        | STRUCT_ OPENLLAVE_ listCamp CLOSELLAVE_ ID_ SEMICOLON_ {
-		int ref = insTdR();
-		if(!insTdS($5, VARIABLE, $1, niv, dvar, ref)) {
+		if(!insTdS($5, VARIABLE, $1, niv, dvar, $3.ref1)) {
 			yyerror("Identificador repetido");
 		} else {
 			dvar += $3.ref2 + TALLA_TIPO_SIMPLE;
@@ -68,11 +66,11 @@ tipoSimp
        ;
 listCamp
        : listCamp tipoSimp ID_ SEMICOLON_ {
-		$$.ref1 = $1.ref1 * ($2,$1,0);
+		$$.ref1 = insTdR($1.ref1, $3, $2, $1.ref2);
 		$$.ref2 = $1.ref2 + TALLA_TIPO_SIMPLE;
 	}
        | tipoSimp ID_ SEMICOLON_ {
-		$$.ref1 = ($2,$1,0);
+		$$.ref1 = insTdR(-1, $2, $1, 0);
 		$$.ref2 = TALLA_TIPO_SIMPLE;
        	}
        ;
