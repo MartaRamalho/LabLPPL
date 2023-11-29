@@ -8,6 +8,7 @@
        char *ident; /* Nombre del identificador */
        int cent; /* Valor de la cte num´erica entera */
        DOSV dosv;
+       NT nt;
 }
 
 %token OPSUMA_ OPRESTA_ OPMULT_ OPDIV_ OPAND_ OPDECREASE_ OPIGUAL_ OPINCREASE_ OPNOT_ OPOR_ 
@@ -20,6 +21,7 @@
 %token <ident> ID_
 %type <cent> tipoSimp
 %type <dosv> listCamp listParamForm
+%type <nt> declaVar
 %%
 
 programa
@@ -39,6 +41,8 @@ declaVar
 			yyerror("Identificador repetido");
 		} else {
 			dvar += TALLA_TIPO_SIMPLE;
+			$$.nom = $2;
+			$$.tipo = $1;
 		}
        }
        | tipoSimp ID_ OPENCORCH_ CTE_ CLOSECORCH_ SEMICOLON_ {
@@ -48,15 +52,21 @@ declaVar
 			numelem = 0;
 		}
 		int refe = insTdA($1, numelem);
-		if ( ! insTdS($2, VARIABLE, T_ARRAY, niv, dvar, refe) )
+		if ( ! insTdS($2, VARIABLE, T_ARRAY, niv, dvar, refe) ) {
                 	yyerror ("Identificador repetido");
-             	else dvar += numelem * TALLA_TIPO_SIMPLE;
+		} else {
+			dvar += numelem * TALLA_TIPO_SIMPLE;
+			$$.nom = $2;
+			$$.tipo = $1;
+		}
        }
        | STRUCT_ OPENLLAVE_ listCamp CLOSELLAVE_ ID_ SEMICOLON_ {
 		if(!insTdS($5, VARIABLE, $1, niv, dvar, $3.ref1)) {
 			yyerror("Identificador repetido");
 		} else {
 			dvar += $3.ref2 + TALLA_TIPO_SIMPLE;
+			$$.nom = $2;
+			$$.tipo = $1;
 		}
        }
        ;
@@ -102,7 +112,7 @@ listParamForm
 declaVarLocal
        : 
        | declaVarLocal declaVar {
-		insTdS($5, VARIABLE, $1, niv, dvar, -1);
+		insTdS($2.nom, VARIABLE, $2.tipo, niv, dvar, -1);
 		dvar += TALLA_SEGENLACES;
        }
        ;
