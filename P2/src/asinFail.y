@@ -20,7 +20,7 @@
 %token <cent> CTE_
 %token <ident> ID_
 %type <cent> tipoSimp
-%type <dosv> listCamp listParamForm
+%type <dosv> listCamp listParamForm declaFunc
 %type <nt> declaVar
 %%
 
@@ -85,7 +85,13 @@ listCamp
        	}
        ;
 declaFunc
-       : tipoSimp ID_ OPENPAR_ paramForm CLOSEPAR_ OPENLLAVE_ declaVarLocal listInst RETURN_ expre SEMICOLON_ CLOSELLAVE_ {// falta}
+       : tipoSimp ID_ OPENPAR_ paramForm CLOSEPAR_ OPENLLAVE_ declaVarLocal listInst RETURN_ expre SEMICOLON_ CLOSELLAVE_ {
+	n++; cargaContexto(n); $$.ref1 = dvar; dvar = 0;
+	insTdS($2, FUNCION, , n-1, , ); //FALTA POR PONER EL TIPO, EL DESPLAZAMIENTO Y EL REF
+	if($1.t != ) { yyerror ("Se devuelve un tipo distinto al declarado en la funcion"); }
+	if(true) { mostrarTdS(); } //FALTA PONER LA CONDION DE QUE SI ESTA ACTIVADO EL MODO, SE MUESTRE LA TDS
+	descargaContexto(n); n--; dvar = $$ref1;
+	}
        ;
 paramForm
        : {
