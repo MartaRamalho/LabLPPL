@@ -72,7 +72,7 @@ tipoSimp
        ;
 listCamp
        : tipoSimp ID_ SEMICOLON_ {
-		($2,$1,0)
+		$$.ref1 = ($2,$1,0)
        	}
        | listCamp tipoSimp ID_ SEMICOLON_ {
 		
