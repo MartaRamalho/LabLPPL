@@ -7,7 +7,7 @@
 %union {
        char *ident; /* Nombre del identificador */
        int cent; /* Valor de la cte num´erica entera */
-       dosv refes2;
+       DOSV dosv;
 }
 
 %token OPSUMA_ OPRESTA_ OPMULT_ OPDIV_ OPAND_ OPDECREASE_ OPIGUAL_ OPINCREASE_ OPNOT_ OPOR_ 
@@ -19,7 +19,7 @@
 %token <cent> CTE_
 %token <ident> ID_
 %type <cent> tipoSimp
-
+%type <dosv> listCampos
 %%
 
 programa
@@ -35,7 +35,7 @@ decla
        ;
 declaVar
        : tipoSimp ID_ SEMICOLON_ {
-		if(!insTdS($2, VARIABLE, $1, niv, dvar, -1)){
+		if(!insTdS($2, VARIABLE, $1, niv, dvar, -1)) {
 			yyerror("Identificador repetido");
 		} else {
 			dvar += TALLA_TIPO_SIMPLE;
@@ -72,11 +72,7 @@ tipoSimp
        ;
 listCamp
        : tipoSimp ID_ SEMICOLON_ {
-		if(!insTdS($2, VARIABLE, $1, niv, dvar, -1)){
-			yyerror("Identificador repetido");
-		} else {
-			dvar += TALLA_TIPO_SIMPLE;
-		}
+		
        }
        | listCamp tipoSimp ID_ SEMICOLON_ {// falta}
        ;
