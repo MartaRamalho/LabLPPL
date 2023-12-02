@@ -91,7 +91,7 @@ declaFunc
               $$.ref1 = dvar; 
               dvar = 0;
               insTdS($2, FUNCION, insTdD( $4.ref1, $1 ), n-1, dvar, -1); //FALTA POR PONER EL TIPO, EL DESPLAZAMIENTO Y EL REF
-              if($1 != $10) { 
+              if($1 != $10.t) { 
                      yyerror ("Se devuelve un tipo distinto al declarado en la funcion"); 
               }
               if(verTdS) {
