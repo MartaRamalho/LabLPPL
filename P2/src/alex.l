@@ -72,8 +72,8 @@ comentario     "//".*\n
 "," {retornar (COMA_);}
 "." {retornar (PUNTO_)}
 
-{constante}      {yylval.cent = atoi(yytext); retornar (CTE_); }
 {id} {yylval.ident = strdup(yytext); retornar (ID_);}
+{constante}      {yylval.cent = atoi(yytext); retornar (CTE_); }
 
 .	       { yyerror("Caracter desconocido"); }
 

@@ -10,6 +10,7 @@
 #define TRUE  1
 #define FALSE 0
 #define TALLA_TIPO_SIMPLE 1
+#define TALLA_SEGENLACES 2
 /****************************************************** Structuras */
   
 typedef struct dosv  /* Estructura para las referencias prima */
@@ -37,6 +38,7 @@ extern void yyerror(const char * msg) ;   /* Tratamiento de errores          */
 
 extern int verbosidad;                   /* Flag si se desea una traza       */
 extern int numErrores;              /* Contador del numero de errores        */
+extern int verTdS;
 
 #endif  /* _HEADER_H */
 /*****************************************************************************/

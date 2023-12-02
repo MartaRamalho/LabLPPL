@@ -32,7 +32,7 @@ listDecla
        | listDecla decla {$$ = $1 + $2;}
        ;
 decla
-       : declaVar {$$ = 0;}
+       : declaVar //{$$ = 0;}
        | declaFunc
        ;
 declaVar

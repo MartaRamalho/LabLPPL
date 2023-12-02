@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "header.h"
+#include "libtds.h"
 
 int verTdS=FALSE;                        /* Si se desea mostrar la TDS       */
 int verbosidad=FALSE;                    /* Si se desea una traza o no       */
