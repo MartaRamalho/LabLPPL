@@ -26,7 +26,7 @@
 %%
 
 programa
-       : listDecla { dvar = 0; niv = 0; cargaContexto(niv); }
+       : { dvar = 0; niv = 0; cargaContexto(niv); } listDecla
        ;
 
 listDecla
@@ -35,7 +35,7 @@ listDecla
        ;
 
 decla
-       : declaVar 
+       : declaVar
        | declaFunc
        ;
 
@@ -68,7 +68,7 @@ declaVar
 		if(!insTdS($5, VARIABLE, $3.ref1, niv, dvar, $3.ref1)) {
 			yyerror("Identificador repetido");
 		} else {
-			dvar += $3.ref2 + TALLA_TIPO_SIMPLE;
+			dvar += TALLA_TIPO_SIMPLE;
 			$$.nom = $5;
 			$$.tipo = $3.ref1;
 		}
@@ -83,11 +83,19 @@ tipoSimp
 listCamp
        : listCamp tipoSimp ID_ SEMICOLON_ {
 		$$.ref1 = insTdR($1.ref1, $3, $2, $1.ref2);
-		$$.ref2 = $1.ref2 + TALLA_TIPO_SIMPLE;
+		if(!insTdS($3, VARIABLE, $2, niv, dvar, $$.ref1)) {
+			yyerror("Identificador repetido");
+		} else {
+              dvar += TALLA_TIPO_SIMPLE;
+		}
 	}
        | tipoSimp ID_ SEMICOLON_ {
 		$$.ref1 = insTdR(-1, $2, $1, 0);
-		$$.ref2 = TALLA_TIPO_SIMPLE;
+		if(!insTdS($2, VARIABLE, $1, niv, dvar, $$.ref1)) {
+			yyerror("Identificador repetido");
+		} else {
+              dvar += TALLA_TIPO_SIMPLE;
+		}
        	}
        ;
 
@@ -101,7 +109,9 @@ declaFunc
          }
          OPENPAR_ paramForm CLOSEPAR_
          {
-              insTdS($2, FUNCION, $1, niv-1, dvar, -1); //FALTA POR PONER EL TIPO, EL DESPLAZAMIENTO Y EL REF
+              if(!insTdS($2, FUNCION, $1, niv-1, dvar, -1)){
+                     yyerror("Identificador repetido");
+              }
          }
          OPENLLAVE_ declaVarLocal listInst RETURN_ expre SEMICOLON_ CLOSELLAVE_
          {
@@ -129,26 +139,28 @@ listParamForm
        : tipoSimp ID_ {
 		$$.ref1 = insTdD(-1, $1);
 		$$.ref2 = TALLA_SEGENLACES + TALLA_TIPO_SIMPLE;
-		insTdS($2, PARAMETRO, $1, niv, -$$.ref2, $$.ref1);
+
+		if(!insTdS($2, PARAMETRO, $1, niv, -$$.ref2, -1)){
+              yyerror("Identificador repetido");
+		}
 	}
        | tipoSimp ID_ COMA_ listParamForm {
 		$$.ref1 = insTdD($4.ref1, $1);
 		$$.ref2 = $4.ref2 + TALLA_TIPO_SIMPLE;
-		insTdS($2, PARAMETRO, $1, niv, -$$.ref2, $$.ref1);
+		if(!insTdS($2, PARAMETRO, $1, niv, -$$.ref2, -1)){
+              yyerror("Identificador repetido");
+		}
 	}
        ;
 
 declaVarLocal
        :
-       | declaVarLocal declaVar {
-		insTdS($2.nom, VARIABLE, $2.tipo, niv, dvar, -1);
-		dvar += TALLA_SEGENLACES;
-       }
+       | declaVarLocal declaVar
        ;
 
 listInst
        :
-       | listInst inst 
+       | listInst inst
        ;
 inst
        : OPENLLAVE_ listInst CLOSELLAVE_
@@ -190,16 +202,16 @@ expreRel
        | expreRel opRel expreAd
        ;
 expreAd
-       : expreMul 
+       : expreMul
        | expreAd opAd expreMul
        ;
 expreMul
        : expreUna
        | expreMul opMul expreUna
        ;
-expreUna 
+expreUna
        : expreSufi
-       | opUna expreUna 
+       | opUna expreUna
        | opIncre ID_
        ;
 expreSufi
@@ -238,7 +250,7 @@ opRel
        | COMPMAYOR_
        | COMPMAYORIG_
        ;
-opAd 
+opAd
        : OPSUMA_
        | OPRESTA_
        ;
