@@ -109,7 +109,7 @@ declaFunc
          }
          OPENPAR_ paramForm CLOSEPAR_
          {
-              if(!insTdS($2, FUNCION, $1, niv-1, dvar, -1)){
+              if(!insTdS($2, FUNCION, $1, niv-1, dvar, insTdD( $5.ref1, $1 ))){
                      yyerror("Identificador repetido");
               }
          }
