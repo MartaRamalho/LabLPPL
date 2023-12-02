@@ -86,11 +86,11 @@ listCamp
        ;
 declaFunc
        : tipoSimp ID_ OPENPAR_ paramForm CLOSEPAR_ OPENLLAVE_ declaVarLocal listInst RETURN_ expre SEMICOLON_ CLOSELLAVE_ {
-              n++; 
+              niv++; 
               cargaContexto(n); 
               $$.ref1 = dvar; 
               dvar = 0;
-              insTdS($2, FUNCION, , n-1, , ); //FALTA POR PONER EL TIPO, EL DESPLAZAMIENTO Y EL REF
+              insTdS($2, FUNCION, ($4.ref1, $1.t, $4.ref2), n-1, dvar, -1); //FALTA POR PONER EL TIPO, EL DESPLAZAMIENTO Y EL REF
               if($1.t != ) { 
                      yyerror ("Se devuelve un tipo distinto al declarado en la funcion"); 
               }
@@ -98,7 +98,7 @@ declaFunc
                       mostrarTdS(); 
               } 
               descargaContexto(n);
-              n--;
+              niv--;
               dvar = $$ref1;
 	}
        ;
