@@ -109,7 +109,7 @@ declaFunc
          }
          OPENPAR_ paramForm CLOSEPAR_
          {
-              if(!insTdS($2, FUNCION, $1, niv-1, dvar, insTdD( $5.ref1, $1 ))){
+              if(!insTdS($2, FUNCION, $1, niv-1, dvar, $5.ref1)){
                      yyerror("Identificador repetido");
               }
          }
@@ -140,14 +140,14 @@ listParamForm
 		$$.ref1 = insTdD(-1, $1);
 		$$.ref2 = TALLA_SEGENLACES + TALLA_TIPO_SIMPLE;
 
-		if(!insTdS($2, PARAMETRO, $1, niv, -$$.ref2, -1)){
+		if(!insTdS($2, PARAMETRO, $1, niv, -$$.ref2, $$.ref1)){
               yyerror("Identificador repetido");
 		}
 	}
        | tipoSimp ID_ COMA_ listParamForm {
 		$$.ref1 = insTdD($4.ref1, $1);
 		$$.ref2 = $4.ref2 + TALLA_TIPO_SIMPLE;
-		if(!insTdS($2, PARAMETRO, $1, niv, -$$.ref2, -1)){
+		if(!insTdS($2, PARAMETRO, $1, niv, -$$.ref2, $$.ref1)){
               yyerror("Identificador repetido");
 		}
 	}
