@@ -11,18 +11,6 @@
 #define FALSE 0
 #define TALLA_TIPO_SIMPLE 1
 #define TALLA_SEGENLACES 2
-/****************************************************** Structuras */
-  
-typedef struct dosv  /* Estructura para las referencias prima */
-{
-  int   ref1;                                      /*  */
-  int   ref2;                                      /*  */
-} DOSV;
-typedef struct nt  /* Estructura para las funciones                         */
-{
-  char *nom;                             /* Nombre de la funcion             */
-  int   tipo;                            /* Tipo del rango de la funcion     */
-}NT;
 
 #define OP_NOT 0
 #define OP_SUMA 1
@@ -39,6 +27,20 @@ typedef struct nt  /* Estructura para las funciones                         */
 #define OP_NOTIGUAL 12
 #define OP_OR 13
 #define OP_AND 14
+/****************************************************** Structuras */
+  
+typedef struct dosv  /* Estructura para las referencias prima */
+{
+  int   ref1;                                      /*  */
+  int   ref2;                                      /*  */
+} DOSV;
+typedef struct nt  /* Estructura para las funciones                         */
+{
+  char *nom;                             /* Nombre de la funcion             */
+  int   tipo;                            /* Tipo del rango de la funcion     */
+}NT;
+
+
 
 /************************************* Variables externas definidas en el AL */
 extern int yylex();
