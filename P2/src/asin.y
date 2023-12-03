@@ -27,6 +27,13 @@
 
 programa
        : { dvar = 0; niv = 0; cargaContexto(niv); } listDecla
+              {
+                     if($2 >= 0){
+                            yyerror("No hay una función main");
+                     } else if ($2 < -1) {
+                            yyerror("Hay más de una función main");
+                     }
+              }
        ;
 
 listDecla
