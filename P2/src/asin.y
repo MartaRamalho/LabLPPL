@@ -20,9 +20,9 @@
 %token TRUE_ FALSE_ BOOL_
 %token <cent> CTE_ INT_ 
 %token <ident> ID_
-%type <cent> tipoSimp declaFunc
+%type <cent> tipoSimp declaFunc opIncre opUna opMul opAd opRel opIgual opLogic
 %type <dosv> listCamp listParamForm paramForm
-%type <tipo> const expreSufi opIncre opUna opMul opAd opRel opIgual opLogic
+%type <tipo> const expreSufi
 %%
 
 programa
@@ -208,34 +208,35 @@ expreUna
        | opUna expreUna
        | opIncre ID_
        ;
+
 expreSufi
-       : const                    {$$.tipo = $1.t;}
-       | OPENPAR_ expre CLOSEPAR_ {$$.tipo = $2;}
+       : const                    {$$.t = $1.t;}
+       | OPENPAR_ expre CLOSEPAR_ {$$.t = $2.t;}
        | ID_
               {
-			$$.tipo = T_ERROR;
+			$$.t = T_ERROR;
 			SIMB sim = obtTdS($1);
 		 	if (sim.t == T_ERROR) {
 				 yyerror("No existe ninguna variable con ese identificador.");
-			 } else { 
-				 $$.tipo = sim.t;
+			 } else {
+				 $$.t = sim.t;
 			 }
 		}
        | ID_ opIncre
               {
-			$$.tipo = T_ERROR;
+			$$.t = T_ERROR;
 			SIMB sim = obtTdS($1);
 			if (sim.t == T_ERROR) {
 				yyerror("No existe ninguna variable con ese identificador.");
 			} else if (sim.t == T_ENTERO) {
-				$$.tipo = sim.t;
+				$$.t = sim.t;
 			} else {
 				yyerror("Incompatibilidad de tipos, solo se puede aplicar el operador \"++\" o \"--\" a una expresion entera.");
 			}
 		}
        | ID_ PUNTO_ ID_
 		{
-			$$.tipo = T_ERROR;
+			$$.t = T_ERROR;
 			SIMB sim = obtTdS($1);
 			CAMP cam = obtTDR(sim.ref, $3)
 			if (sim.t == T_ERROR) {
@@ -245,41 +246,41 @@ expreSufi
 			} else if (cam.t == T_ERROR) {	/* Falta hacer el resto de este */
 				yyerror("No existe ninguna variable con ese identificador en ese campo.")
 			} else {
-				$$.tipo = cam.t
+				$$.t = cam.t
 			}
-			
+
 		}
        | ID_ OPENCORCH_ expre CLOSECORCH_
 		{
-			$$.tipo = T_ERROR;
+			$$.t = T_ERROR;
 			SIMB sim = obtTdS($1);
 			if (sim.t == T_ERROR) {
 				yyerror("No existe ninguna variable con ese identificador.");
 			} else if ($3.t != T_ENTERO) {
 				yyerror("El indice para acceder a un vector debe ser un entero 0 o positivo.");
-			} else { 
+			} else {
 				DIM dim = obtTdA(sim.ref);
-				$$.tipo = dim.telem;
+				$$.t = dim.telem;
 			}
 		}
        | ID_ OPENPAR_ paramAct CLOSEPAR_
 		{
-			$$.tipo = T_ERROR;
+			$$.t = T_ERROR;
 			SIMB sim = obtTdS($1);
-			INF inf = obtTdD(sim.ref);
-
-			if (sim.t == T_ERROR) { 
-				yyerror("No existe ninguna variable con ese identificador."); 
-			} else if (inf.t == T_ERROR) { 
-				yyerror("No existe ninguna funcion con ese identificador."); 
+			if (sim.t == T_ERROR) {
+				yyerror("No existe ninguna variable con ese identificador.");
+			} else if (inf.t == T_ERROR) {
+				yyerror("No existe ninguna funcion con ese identificador.");
 			} else {
-				$$.tipo = inf.t;
+                INF inf = obtTdD(sim.ref);
+				$$.t = inf.t;
 			}
 		}
+       ;
 const
-       : CTE_               {$$.tipo = T_ENTERO} 
-       | TRUE_              {$$.tipo = T_LOGICO}  
-       | FALSE_             {$$.tipo = T_LOGICO}  
+       : CTE_               {$$.t = T_ENTERO;}
+       | TRUE_              {$$.t = T_LOGICO;}
+       | FALSE_             {$$.t = T_LOGICO;}
        ;
 paramAct
        :
@@ -290,35 +291,34 @@ listParamAct
        | expre COMA_ listParamAct       
        ;
 opLogic
-       : OPAND_              {$$ = OP_AND;} 
-       | OPOR_               {$$ = OP_OR;} 
+       : OPAND_              {$$ = OP_AND;}
+       | OPOR_               {$$ = OP_OR;}
        ;
 opIgual
-       : COMPIGUAL_          {$$ = OP_IGUAL;} 
-       | COMPDIF_            {$$ = OP_NOTIGUAL;} 
+       : COMPIGUAL_          {$$ = OP_IGUAL;}
+       | COMPDIF_            {$$ = OP_NOTIGUAL;}
        ;
 opRel
-       : COMPMENOR_          {$$ = OP_MENOR;} 
-       | COMPMENORIG_        {$$ = OP_MENORIG;} 
-       | COMPMAYOR_          {$$ = OP_MAYOR;} 
-       | COMPMAYORIG_        {$$ = OP_MAYORIG;} 
+       : COMPMENOR_          {$$ = OP_MENOR;}
+       | COMPMENORIG_        {$$ = OP_MENORIG;}
+       | COMPMAYOR_          {$$ = OP_MAYOR;}
+       | COMPMAYORIG_        {$$ = OP_MAYORIG;}
        ;
-opAd 
-       : OPSUMA_             {$$ = OP_SUMA;} 
-       | OPRESTA_            {$$ = OP_RESTA;} 
+opAd
+       : OPSUMA_             {$$ = OP_SUMA;}
+       | OPRESTA_            {$$ = OP_RESTA;}
        ;
 opMul
-       : OPMULT_             {$$ = OP_MULT;} 
-       | OPDIV_              {$$ = OP_DIV;} 
+       : OPMULT_             {$$ = OP_MULT;}
+       | OPDIV_              {$$ = OP_DIV;}
        ;
 opUna
-       : OPSUMA_             {$$ = OP_SUMA;}  
-       | OPRESTA_            {$$ = OP_RESTA;}  
-       | OPNOT_              {$$ = OP_NOT;}  
+       : OPSUMA_             {$$ = OP_SUMA;}
+       | OPRESTA_            {$$ = OP_RESTA;}
+       | OPNOT_              {$$ = OP_NOT;}
        ;
 opIncre
-       : OPINCREASE_         {$$ = OP_INCR;} 
-       | OPDECREASE_         {$$ = OP_DECR;} 
+       : OPINCREASE_         {$$ = OP_INCR;}
+       | OPDECREASE_         {$$ = OP_DECR;}
        ;
-
 %%
