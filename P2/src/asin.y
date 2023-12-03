@@ -215,33 +215,33 @@ expreUna
        | opIncre ID_
        ;
 expreSufi
-       : const                    {$$.t = $1.t;}
-       | OPENPAR_ expre CLOSEPAR_ {$$.t = $2.t;}
+       : const                    {$$.tipo = $1.t;}
+       | OPENPAR_ expre CLOSEPAR_ {$$.tipo = $2;}
        | ID_
               {
-			$$.t = T_ERROR;
+			$$.tipo = T_ERROR;
 			SIMB sim = obtTdS($1);
 		 	if (sim.t == T_ERROR) {
 				 yyerror("No existe ninguna variable con ese identificador.");
 			 } else { 
-				 $$.t = sim.t;
+				 $$.tipo = sim.t;
 			 }
 		}
        | ID_ opIncre
               {
-			$$.t = T_ERROR;
+			$$.tipo = T_ERROR;
 			SIMB sim = obtTdS($1);
 			if (sim.t == T_ERROR) {
 				yyerror("No existe ninguna variable con ese identificador.");
 			} else if (sim.t == T_ENTERO) {
-				$$.t = sim.t;
+				$$.tipo = sim.t;
 			} else {
 				yyerror("Incompatibilidad de tipos, solo se puede aplicar el operador \"++\" o \"--\" a una expresion entera.");
 			}
 		}
        | ID_ PUNTO_ ID_
 		{
-			$$.t = T_ERROR;
+			$$.tipo = T_ERROR;
 			SIMB sim = obtTdS($1);
 			CAMP cam = obtTDR(sim.ref, $3)
 			if (sim.t == T_ERROR) {
@@ -251,13 +251,13 @@ expreSufi
 			} else if (cam.t == T_ERROR) {	/* Falta hacer el resto de este */
 				yyerror("No existe ninguna variable con ese identificador en ese campo.")
 			} else {
-				$$.t = cam.t
+				$$.tipo = cam.t
 			}
 			
 		}
        | ID_ OPENCORCH_ expre CLOSECORCH_
 		{
-			$$.t = T_ERROR;
+			$$.tipo = T_ERROR;
 			SIMB sim = obtTdS($1);
 			if (sim.t == T_ERROR) {
 				yyerror("No existe ninguna variable con ese identificador.");
@@ -265,12 +265,12 @@ expreSufi
 				yyerror("El indice para acceder a un vector debe ser un entero 0 o positivo.");
 			} else { 
 				DIM dim = obtTdA(sim.ref);
-				$$.t = dim.telem;
+				$$.tipo = dim.telem;
 			}
 		}
        | ID_ OPENPAR_ paramAct CLOSEPAR_
 		{
-			$$.t = T_ERROR;
+			$$.tipo = T_ERROR;
 			SIMB sim = obtTdS($1);
 			INF inf = obtTdD(sim.ref);
 
@@ -279,7 +279,7 @@ expreSufi
 			} else if (inf.t == T_ERROR) { 
 				yyerror("No existe ninguna funcion con ese identificador."); 
 			} else {
-				$$.t = inf.t;
+				$$.tipo = inf.t;
 			}
 		}
 const
