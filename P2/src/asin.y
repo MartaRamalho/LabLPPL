@@ -283,9 +283,9 @@ expreSufi
 			}
 		}
 const
-       : CTE_               {$$.t = T_ENTERO} 
-       | TRUE_              {$$.t = T_LOGICO}  
-       | FALSE_             {$$.t = T_LOGICO}  
+       : CTE_               {$$.tipo = T_ENTERO} 
+       | TRUE_              {$$.tipo = T_LOGICO}  
+       | FALSE_             {$$.tipo = T_LOGICO}  
        ;
 paramAct
        :
