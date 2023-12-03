@@ -125,7 +125,7 @@ declaFunc
               }
 
               if($12.t != $1){
-                     yyerror("Valor de return distinto al de la función");
+                     yyerror("Tipo de return distinto al de la función");
               }
          }
        ;
