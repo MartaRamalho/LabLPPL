@@ -20,9 +20,9 @@
 %token TRUE_ FALSE_ BOOL_
 %token <cent> CTE_ INT_ 
 %token <ident> ID_
-%type <cent> tipoSimp declaFunc opIncre opUna opMul opAd opRel opIgual opLogic
+%type <cent> tipoSimp declaFunc opIncre opUna opMul opAd opRel opIgual opLogic decla listDecla
 %type <dosv> listCamp listParamForm paramForm
-%type <tipo> const expreSufi
+%type <tipo> const expreSufi expre
 %%
 
 programa
@@ -31,12 +31,12 @@ programa
 
 listDecla
        : decla
-       | listDecla decla
+       | listDecla decla {$$ = $1 + $2;}
        ;
 
 decla
-       : declaVar
-       | declaFunc
+       : declaVar {$$ = 0;}
+       | declaFunc {$$ = $1;}
        ;
 
 declaVar
@@ -115,6 +115,18 @@ declaFunc
               descargaContexto(niv);
               niv--;
               dvar = $<cent>$;
+
+              if(strcmp($2, "main") == 0){
+                     //printf("Main detectado");
+                     $<cent>$ = -1;
+              } else {
+                     //printf("Funcion que no es main");
+                     $<cent>$ = 0;
+              }
+
+              if($12.t != $1){
+                     yyerror("Valor de return distinto al de la función");
+              }
          }
        ;
 
