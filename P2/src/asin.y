@@ -18,11 +18,11 @@
 %token FOR_ IF_ ELSE_ WHILE_ STRUCT_
 %token READ_ RETURN_ PRINT_
 %token TRUE_ FALSE_ BOOL_
-%token <cent> CTE_ INT_ opIncre opUna opMul opAd opRel opIgual opLogic expreSufi
+%token <cent> CTE_ INT_ 
 %token <ident> ID_
 %type <cent> tipoSimp declaFunc
 %type <dosv> listCamp listParamForm paramForm
-%type <tipo> const expreSufi
+%type <tipo> const expreSufi opIncre opUna opMul opAd opRel opIgual opLogic
 %%
 
 programa
