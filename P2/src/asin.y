@@ -72,7 +72,7 @@ declaVar
 		if(!insTdS($5, VARIABLE, T_RECORD, niv, dvar, $3.ref1)) {
 			yyerror("Identificador repetido");
 		} else {
-			dvar += TALLA_TIPO_SIMPLE;
+			dvar += $3.ref2;
 		}
        }
        ;
@@ -84,22 +84,18 @@ tipoSimp
 
 listCamp
        : listCamp tipoSimp ID_ SEMICOLON_ {
-        $$.ref2=$1.ref2+TALLA_TIPO_SIMPLE;
         $$.ref1 = insTdR($1.ref1, $3, $2, $$.ref2);
-		if($$.ref1==-1) {
+        $$.ref2 = $1.ref2;
+		if($$.ref1 == -1) {
+            $$.ref1 = $1.ref1;
 			yyerror("Identificador repetido");
 		} else {
-              dvar += TALLA_TIPO_SIMPLE;
+              $$.ref2 = $1.ref2 + TALLA_TIPO_SIMPLE;
 		}
 	}
        | tipoSimp ID_ SEMICOLON_ {
 		$$.ref1 = insTdR(-1, $2, $1, 0);
-		$$.ref2=0;
-		if($$.ref1==-1) {
-			yyerror("Identificador repetido");
-		} else {
-              dvar += TALLA_TIPO_SIMPLE;
-		}
+		$$.ref2 = TALLA_TIPO_SIMPLE;
        	}
        ;
 
