@@ -1,7 +1,7 @@
 %{
 #include <stdio.h>
 #include <string.h>
-#include "header.h" 
+#include "header.h"
 #include "asin.h"
 
 
@@ -13,18 +13,25 @@
   Estas opciones evitan "warnings" innecesarios y permiten obtener el
   numero de linea actual en la variable global "yylineno".
 -----------------------------------------------------------------------------*/
-%option noinput       
-%option nounput       
-%option yylineno  
+%option noinput
+%option nounput
+%option yylineno
 
-delimitador    [ \t\n]+
+delimitador    [ \t]+
 digito         [0-9]
 letra          [A-Za-z]
 constante    {digito}*("."{digito}+)?|{digito}+"."{digito}*
 id             {letra}({letra}|{digito}|"_")*
-comentario     "//".*\n
+comentario     "//".*
 
 %%
+
+"\n" {
+if (verbosidad && yylineno>numlineaold) {
+    fprintf(stdout,"\n%3d.- ", yylineno);
+    numlineaold = yylineno;
+  }
+}
 
 {delimitador} { if (verbosidad) ECHO; }
 {comentario} { if (verbosidad) ECHO; }

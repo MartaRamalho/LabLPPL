@@ -106,7 +106,7 @@ union YYSTYPE
        char *ident; /* Nombre del identificador */
        int cent; /* Valor de la cte num´erica entera */
        DOSV dosv;
-       NT nt;
+       TIPO tipo;
 
 #line 112 "asin.h"
 

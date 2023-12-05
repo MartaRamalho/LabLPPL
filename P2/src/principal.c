@@ -10,6 +10,7 @@
 int verTdS=FALSE;                        /* Si se desea mostrar la TDS       */
 int verbosidad=FALSE;                    /* Si se desea una traza o no       */
 int numErrores=0;                        /* Contador del numero de errores   */
+int numlineaold = 1;
 /*****************************************************************************/
 void yyerror(const char * msg)
 /*  Tratamiento de errores.                                                  */
