@@ -20,7 +20,7 @@
 %token TRUE_ FALSE_ BOOL_
 %token <cent> CTE_ INT_
 %token <ident> ID_
-%type <cent> tipoSimp declaFunc listDecla decla opIncre opUna opMul opAd opRel opIgual opLogic
+%type <cent> tipoSimp declaFunc listDecla decla opIncre opUna opMul opAd opRel opIgual opLogic listParamAct paramAct
 %type <dosv> listCamp listParamForm paramForm
 %type <tipo> const expreSufi expre expreLogic expreAd expreIgual expreMul expreRel expreUna
 
@@ -113,7 +113,7 @@ declaFunc
          }
          OPENPAR_ paramForm CLOSEPAR_
          {
-              if(!insTdS($2, FUNCION, $1, niv-1, dvar, $5.ref1)){
+              if(!insTdS($2, FUNCION, $1, niv-1, -1, $5.ref1)){
                      yyerror("Identificador repetido");
               }
          }
@@ -430,6 +430,8 @@ expreSufi
 				yyerror("No existe ninguna variable con ese identificador.");
 			} else if (inf.tipo == T_ERROR) {
 				yyerror("No existe ninguna funcion con ese identificador.");
+			} else if (!cmpDom(sim.ref, $3)) {
+                yyerror("Parámetros de la función incorrectos");
 			} else {
 				$$.t = inf.tipo;
 			}
@@ -441,12 +443,18 @@ const
        | FALSE_             {$$.t = T_LOGICO;}
        ;
 paramAct
-       :
-       | listParamAct
+       : {$$ = insTdD(-1,T_VACIO);}
+       | listParamAct {
+              $$ = $1;
+       }
        ;
 listParamAct
-       : expre
-       | expre COMA_ listParamAct
+       : expre {
+              $$=insTdD(-1, $1.t);
+       }
+       | expre COMA_ listParamAct {
+              $$=insTdD($3, $1.t);
+       }
        ;
 opLogic
        : OPAND_              {$$ = OP_AND;}
