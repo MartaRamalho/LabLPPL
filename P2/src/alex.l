@@ -26,12 +26,7 @@ comentario     "//".*
 
 %%
 
-"\n" {
-if (verbosidad && yylineno>numlineaold) {
-    fprintf(stdout,"\n%3d.- ", yylineno);
-    numlineaold = yylineno;
-  }
-}
+"\n" {if (verbosidad) fprintf(stdout,"\n%3d.- ", yylineno);}
 
 {delimitador} { if (verbosidad) ECHO; }
 {comentario} { if (verbosidad) ECHO; }

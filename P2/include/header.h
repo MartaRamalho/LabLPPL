@@ -54,7 +54,6 @@ extern void yyerror(const char * msg) ;   /* Tratamiento de errores          */
 extern int verbosidad;                   /* Flag si se desea una traza       */
 extern int numErrores;              /* Contador del numero de errores        */
 extern int verTdS;
-extern int numlineaold;
 
 #endif  /* _HEADER_H */
 /*****************************************************************************/
