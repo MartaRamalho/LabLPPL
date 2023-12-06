@@ -50,7 +50,7 @@ decla
 declaVar
        : tipoSimp ID_ SEMICOLON_ {
 		if(!insTdS($2, VARIABLE, $1, niv, dvar, -1)) {
-			yyerror("Identificador repetido");
+			yyerror("Identificador de variable repetido.");
 		} else {
 			dvar += TALLA_TIPO_SIMPLE;
 		}
@@ -63,14 +63,14 @@ declaVar
 		}
 		int refe = insTdA($1, numelem);
 		if ( ! insTdS($2, VARIABLE, T_ARRAY, niv, dvar, refe) ) {
-                	yyerror ("Identificador repetido");
+                	yyerror ("Identificador del array repetido.");
 		} else {
 			dvar += numelem * TALLA_TIPO_SIMPLE;
 		}
        }
        | STRUCT_ OPENLLAVE_ listCamp CLOSELLAVE_ ID_ SEMICOLON_ {
 		if(!insTdS($5, VARIABLE, T_RECORD, niv, dvar, $3.ref1)) {
-			yyerror("Identificador repetido");
+			yyerror("Identificador de struct repetido.");
 		} else {
 			dvar += $3.ref2;
 		}
@@ -88,7 +88,7 @@ listCamp
         $$.ref2 = $1.ref2;
 		if($$.ref1 == -1) {
             $$.ref1 = $1.ref1;
-			yyerror("Identificador repetido");
+			yyerror("Identificador de campo repetido.");
 		} else {
               $$.ref2 = $1.ref2 + TALLA_TIPO_SIMPLE;
 		}
@@ -110,7 +110,7 @@ declaFunc
          OPENPAR_ paramForm CLOSEPAR_
          {
               if(!insTdS($2, FUNCION, $1, niv-1, -1, $5.ref1)){
-                     yyerror("Identificador repetido");
+                     yyerror("Identificador de la función repetido.");
               }
          }
          OPENLLAVE_ declaVarLocal listInst RETURN_ expre SEMICOLON_ CLOSELLAVE_
@@ -131,7 +131,7 @@ declaFunc
               }
 
               if($12.t != $1){
-                     yyerror("Tipo de return distinto al de la función");
+                     yyerror("Tipo de return distinto al de la declaración de la función");
               }
          }
        ;
@@ -153,14 +153,14 @@ listParamForm
 		$$.ref2 = TALLA_SEGENLACES + TALLA_TIPO_SIMPLE;
 
 		if(!insTdS($2, PARAMETRO, $1, niv, -$$.ref2, $$.ref1)){
-              yyerror("Identificador repetido");
+              yyerror("Parámetro de la función repetido.");
 		}
 	}
        | tipoSimp ID_ COMA_ listParamForm {
 		$$.ref1 = insTdD($4.ref1, $1);
 		$$.ref2 = $4.ref2 + TALLA_TIPO_SIMPLE;
 		if(!insTdS($2, PARAMETRO, $1, niv, -$$.ref2, $$.ref1)){
-              yyerror("Identificador repetido");
+              yyerror("Parámetro de la función repetido.");
 		}
 	}
        ;
@@ -199,21 +199,21 @@ instEntSal
        | PRINT_ OPENPAR_ expre CLOSEPAR_ SEMICOLON_{
 
               if( $3.t != T_ERROR && $3.t != T_ENTERO){
-                      yyerror("El objeto no es de tipo entero.");
+                      yyerror("El argumento del 'print' no es de tipo entero.");
               }
        }
        ;
 instSelec
        : IF_ OPENPAR_ expre CLOSEPAR_ inst ELSE_ inst {
               if($3.t!=T_ERROR && $3.t!=T_LOGICO){
-                     yyerror("La expresión debe ser de tipo lógico.");
+                     yyerror("La expresión del 'if' debe ser de tipo lógico.");
               }
        }
        ;
 instIter
        : WHILE_ OPENPAR_ expre {
                      if($3.t!=T_ERROR && $3.t!=T_LOGICO){
-                            yyerror("La expresión debe ser de tipo lógico.");
+                            yyerror("La expresión del 'while' debe ser de tipo lógico.");
                      }
               }
        CLOSEPAR_ inst
@@ -228,7 +228,7 @@ expre
               }
               else if($3.t!=T_ERROR){
                      if($3.t!=sim.t){
-                            yyerror("Incompatibilidad de tipos.");
+                            yyerror("Incompatibilidad de tipos en la asignación.");
                      }
                      else {
                             $$.t=sim.t;
@@ -249,7 +249,7 @@ expre
                             yyerror("El índice del array debe ser un número entero.");
                      }
                      else if(dim.telem!=$6.t){
-                            yyerror("Tipos incompatibles.");
+                            yyerror("Incompatibilidad de tipos en la asignación.");
                      } else{
                             $$.t = dim.telem;
                      }
@@ -261,9 +261,12 @@ expre
               CAMP camp = obtTdR(sim.ref,$3);
               if(sim.t==T_ERROR || camp.t==T_ERROR){
                      yyerror("Objeto no declarado.");
-              } else if($5.t!=T_ERROR){
+              } else if(sim.t!=T_RECORD){
+                     yyerror("La variable no es de tipo struct.");
+              }
+              else if($5.t!=T_ERROR){
                      if(camp.t!=$5.t){
-                            yyerror("Tipos incompatibles.");
+                            yyerror("Incompatibilidad de tipos en la asignación.");
                      } else{
                             $$.t = $5.t;
                      }
@@ -275,8 +278,8 @@ expreLogic
        | expreLogic opLogic expreIgual {
               $$.t = T_ERROR;
               if($1.t!=T_ERROR && $3.t!=T_ERROR){
-                     if($1.t!=$3.t){
-                            yyerror("Tipos incompatibles");
+                     if($1.t!=T_LOGICO || $3.t!=T_LOGICO){
+                            yyerror("Error en expresión lógica. Las variables no son de tipo lógico.");
                      }
                      else{
                             $$.t = T_LOGICO;
@@ -290,7 +293,7 @@ expreIgual
               $$.t = T_ERROR;
               if($1.t!=T_ERROR && $3.t!=T_ERROR){
                      if($1.t!=$3.t){
-                            yyerror("Tipos incompatibles");
+                            yyerror("Error en expresión de igualdad. Las variables no tienen el mismo tipo.");
                      }
                      else{
                             $$.t = T_LOGICO;
@@ -303,10 +306,8 @@ expreRel
        | expreRel opRel expreAd {
               $$.t = T_ERROR;
               if($1.t!=T_ERROR && $3.t!=T_ERROR){
-                     if($1.t!=$3.t){
-                            yyerror("Tipos incompatibles");
-                     } else if($1.t!=T_ENTERO){
-                            yyerror("Las expresiones deben ser de tipo entero");
+                     if($1.t!=T_ENTERO || $3.t!=T_ENTERO){
+                            yyerror("Error en expresión relacional. Las variables no son enteras.");
                      }
                      else{
                             $$.t = T_LOGICO;
@@ -319,10 +320,8 @@ expreAd
        | expreAd opAd expreMul {
               $$.t = T_ERROR;
               if($1.t!=T_ERROR && $3.t!=T_ERROR){
-                     if($1.t!=$3.t){
-                            yyerror("Tipos incompatibles");
-                     } else if($1.t!=T_ENTERO){
-                            yyerror("Las expresiones deben ser de tipo entero");
+                     if($1.t!=T_ENTERO || $3.t!=T_ENTERO){
+                            yyerror("Error en expresión aditiva. Las variables no son enteras.");
                      }
                      else{
                             $$.t = $1.t;
@@ -335,10 +334,8 @@ expreMul
        | expreMul opMul expreUna {
               $$.t = T_ERROR;
               if($1.t!=T_ERROR && $3.t!=T_ERROR){
-                     if($1.t!=$3.t){
-                            yyerror("Tipos incompatibles.");
-                     } else if($1.t!=T_ENTERO){
-                            yyerror("Las expresiones deben ser de tipo entero");
+                     if($1.t!=T_ENTERO || $3.t!=T_ENTERO){
+                            yyerror("Las variables a multiplicar/dividir no son enteras.");
                      }
                      else{
                             $$.t = $1.t;
@@ -348,7 +345,13 @@ expreMul
        ;
 expreUna
        : expreSufi {$$.t=$1.t;}
-       | opUna expreUna {$$.t=$2.t;}
+       | opUna expreUna {
+              $$.t=$2.t;
+              if($1==OP_NOT && $2.t!=T_LOGICO){
+                     yyerror("Error en expresión unaria. La variable no es de tipo lógico.");
+                     $$.t=T_ERROR;
+              }
+       }
        | opIncre ID_ {
               SIMB sim = obtTdS($2);
               $$.t = T_ERROR;
@@ -397,7 +400,7 @@ expreSufi
 			} else{
               CAMP cam = obtTdR(sim.ref, $3);
               if (cam.t == T_ERROR) {
-                     yyerror("No existe ninguna variable con ese identificador en ese campo.");
+                     yyerror("No existe ningun campo con ese identificador en ese struct.");
               } else {
                      $$.t = cam.t;
               }
@@ -424,8 +427,8 @@ expreSufi
 			INF inf = obtTdD(sim.ref);
 			if (sim.t == T_ERROR) {
 				yyerror("No existe ninguna variable con ese identificador.");
-			} else if (inf.tipo == T_ERROR) {
-				yyerror("No existe ninguna funcion con ese identificador.");
+			} else if (sim.c != FUNCION) {
+				yyerror("No existe ninguna función con ese identificador.");
 			} else if (!cmpDom(sim.ref, $3)) {
                 yyerror("Parámetros de la función incorrectos");
 			} else {
