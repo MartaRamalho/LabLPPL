@@ -350,7 +350,12 @@ expreUna
               if($1==OP_NOT && $2.t!=T_LOGICO){
                      yyerror("Error en expresión unaria. La variable no es de tipo lógico.");
                      $$.t=T_ERROR;
-              } else if(($1== ||  ) && $2.t!=T_LOGICO){
+              } else if(($1== ||  ) && $2.t!=T_ENTERO){ 
+
+
+//aqui hay que comprobar si se usan los tipos de ints con +-, y los logicos con la negacion, el resto salta error
+
+
                      yyerror("Error en expresión unaria. La variable no es de tipo lógico.");
                      $$.t=T_ERROR;
               }
