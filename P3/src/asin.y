@@ -426,7 +426,7 @@ expreSufi
               			} else {
               	       			$$.t = cam.t;
 					$$.d = creaVarTemp();
-					emite($2,crArgPos(sim.n,sim.d + cam.),crArgPos(niv,$3.d), crArgPos(niv,$$.d));
+					emite($2,crArgPos(sim.n,sim.d + cam.d),crArgPos(niv,$3.d), crArgPos(niv,$$.d));
               			}
 			}
 		}
