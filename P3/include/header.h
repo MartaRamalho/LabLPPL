@@ -37,6 +37,7 @@ typedef struct dosv  /* Estructura para las referencias prima */
 typedef struct tipo  /* Estructura para las funciones                         */
 {
   int   t;                            /* Tipo del rango de la funcion     */
+  int   d;
 }TIPO;
 
 
