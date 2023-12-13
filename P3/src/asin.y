@@ -350,6 +350,9 @@ expreUna
               if($1==OP_NOT && $2.t!=T_LOGICO){
                      yyerror("Error en expresión unaria. La variable no es de tipo lógico.");
                      $$.t=T_ERROR;
+              } else if(($1== ||  ) && $2.t!=T_LOGICO){
+                     yyerror("Error en expresión unaria. La variable no es de tipo lógico.");
+                     $$.t=T_ERROR;
               }
        }
        | opIncre ID_ {
@@ -365,7 +368,11 @@ expreUna
        }
        ;
 expreSufi
-       : const                    {$$.t = $1.t;}
+       : const                    {
+		$$.t = $1.t;
+		$$.d = creaVarTemp();
+		emite( EASIG , crArgEnt($1) , crArgNul() , crArgPos(niv,$$.d));
+	}
        | OPENPAR_ expre CLOSEPAR_ {$$.t = $2.t;}
        | ID_
               {
