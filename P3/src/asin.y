@@ -375,6 +375,8 @@ expreSufi
                      yyerror("No existe ninguna variable con ese identificador.");
               } else {
                      $$.t = sim.t;
+		     $$.d = creaVarTemp();
+		     emite( EASIG , crArgPos(niv,$1.d) , crArgNul() , crArgPos(niv,$$.d));
 			 }
 		}
        | ID_ opIncre
