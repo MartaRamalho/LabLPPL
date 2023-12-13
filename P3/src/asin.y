@@ -299,6 +299,8 @@ expreIgual
                             $$.t = T_LOGICO;
                      }
               }
+		$$.d = creaVarTemp();
+		emite($2,crArgPos(niv,$1.d),crArgPos(niv,$3.d), crArgPos(niv,$$.d));
        }
        ;
 expreRel
@@ -313,6 +315,8 @@ expreRel
                             $$.t = T_LOGICO;
                      }
               }
+		$$.d = creaVarTemp();
+		emite($2,crArgPos(niv,$1.d),crArgPos(niv,$3.d), crArgPos(niv,$$.d));
        }
        ;
 expreAd
@@ -327,6 +331,8 @@ expreAd
                             $$.t = $1.t;
                      }
               }
+		$$.d = creaVarTemp();
+		emite($2,crArgPos(niv,$1.d),crArgPos(niv,$3.d), crArgPos(niv,$$.d));
        }
        ;
 expreMul
@@ -340,7 +346,9 @@ expreMul
                      else{
                             $$.t = $1.t;
                      }
-              }
+		}
+		$$.d = creaVarTemp();
+		emite($2,crArgPos(niv,$1.d),crArgPos(niv,$3.d), crArgPos(niv,$$.d));
        }
        ;
 expreUna
@@ -388,7 +396,7 @@ expreSufi
               } else {
                      $$.t = sim.t;
 		     $$.d = creaVarTemp();
-		     emite( EASIG , crArgPos(niv,$1.d) , crArgNul() , crArgPos(niv,$$.d));
+		     emite( EASIG , crArgPos(sim.n , sim.d) , crArgNul() , crArgPos(niv , $$.d));
 			 }
 		}
        | ID_ opIncre
@@ -412,14 +420,15 @@ expreSufi
 			} else if (sim.t != T_RECORD) {
 				yyerror("El identificador debe ser de tipo struct.");
 			} else{
-              CAMP cam = obtTdR(sim.ref, $3);
-              if (cam.t == T_ERROR) {
-                     yyerror("No existe ningun campo con ese identificador en ese struct.");
-              } else {
-                     $$.t = cam.t;
-              }
+              			CAMP cam = obtTdR(sim.ref, $3);
+              			if (cam.t == T_ERROR) {
+              	       			yyerror("No existe ningun campo con ese identificador en ese struct.");
+              			} else {
+              	       			$$.t = cam.t;
+					$$.d = creaVarTemp();
+					emite($2,crArgPos(sim.n,sim.d + cam.),crArgPos(niv,$3.d), crArgPos(niv,$$.d));
+              			}
 			}
-
 		}
        | ID_ OPENCORCH_ expre CLOSECORCH_
 		{
@@ -444,16 +453,16 @@ expreSufi
 			} else if (sim.c != FUNCION) {
 				yyerror("No existe ninguna función con ese identificador.");
 			} else if (!cmpDom(sim.ref, $3)) {
-                yyerror("Parámetros de la función incorrectos");
+                		yyerror("Parámetros de la función incorrectos");
 			} else {
 				$$.t = inf.tipo;
 			}
 		}
        ;
 const
-       : CTE_               {$$.t = T_ENTERO;}
-       | TRUE_              {$$.t = T_LOGICO;}
-       | FALSE_             {$$.t = T_LOGICO;}
+       : CTE_               {$$.t = T_ENTERO; $$.d = $1;}
+       | TRUE_              {$$.t = T_LOGICO; &&.d = 1;}
+       | FALSE_             {$$.t = T_LOGICO; &&.d = 0;}
        ;
 paramAct
        : {$$ = insTdD(-1,T_VACIO);}
