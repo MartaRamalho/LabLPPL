@@ -115,24 +115,24 @@ declaFunc
          }
          OPENLLAVE_ declaVarLocal listInst RETURN_ expre SEMICOLON_ CLOSELLAVE_
          {
-              if(verTdS) {
-                      mostrarTdS();
-              }
-              descargaContexto(niv);
-              niv--;
-              dvar = $<cent>$;
-
               if(strcmp($2, "main") == 0){
                      //printf("Main detectado");
-                     $<cent>$ = -1;
+                     $$ = -1;
               } else {
                      //printf("Funcion que no es main");
-                     $<cent>$ = 0;
+                     $$ = 0;
               }
 
               if($12.t != $1){
                      yyerror("Tipo de return distinto al de la declaración de la función");
               }
+
+              if(verTdS) {
+                      mostrarTdS();
+              }
+              descargaContexto(niv);
+              niv--;
+              dvar = $<cent>3;
          }
        ;
 
