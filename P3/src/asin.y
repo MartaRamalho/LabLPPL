@@ -115,24 +115,24 @@ declaFunc
          }
          OPENLLAVE_ declaVarLocal listInst RETURN_ expre SEMICOLON_ CLOSELLAVE_
          {
-              if(verTdS) {
-                      mostrarTdS();
-              }
-              descargaContexto(niv);
-              niv--;
-              dvar = $<cent>$;
-
               if(strcmp($2, "main") == 0){
                      //printf("Main detectado");
-                     $<cent>$ = -1;
+                     $$ = -1;
               } else {
                      //printf("Funcion que no es main");
-                     $<cent>$ = 0;
+                     $$ = 0;
               }
 
               if($12.t != $1){
                      yyerror("Tipo de return distinto al de la declaración de la función");
               }
+
+              if(verTdS) {
+                      mostrarTdS();
+              }
+              descargaContexto(niv);
+              niv--;
+              dvar = $<cent>3;
          }
        ;
 
@@ -252,6 +252,9 @@ expre
                             yyerror("Incompatibilidad de tipos en la asignación.");
                      } else{
                             $$.t = dim.telem;
+                            $$.t = dim.telem;
+                            emite(EMULT, crArgPos(niv,$3.d),crArgEnt(TALLA_TIPO_SIMPLE), crArgPos(niv,$3.d));
+                            emite(EVA,crArgPos(sim.n,sim.d), crArgPos(niv,$3.d),  crArgPos(niv,$6.d));
                      }
               }
        }
@@ -269,6 +272,7 @@ expre
                             yyerror("Incompatibilidad de tipos en la asignación.");
                      } else{
                             $$.t = $5.t;
+                            emite(EASIG,crArgPos(niv, $5.d),crArgNul(), crArgPos(sim.n,sim.d + cam.d));
                      }
               }
        }
@@ -283,6 +287,10 @@ expreLogic
                      }
                      else{
                             $$.t = T_LOGICO;
+                            $$.d = creaVarTemp();
+                            emite($2,crArgPos(niv,$1.d),crArgPos(niv,$3.d), crArgPos(niv,$$.d));
+                            emite(EMENEQ,crArgPos(niv,$$.d),crArgEnt(1), crArgEtq(si+2));
+                            emite(EASIG,crArgEnt(1),crArgNul(), crArgPos(niv,$$.d));
                      }
               }
        }
@@ -358,13 +366,8 @@ expreUna
               if($1==OP_NOT && $2.t!=T_LOGICO){
                      yyerror("Error en expresión unaria. La variable no es de tipo lógico.");
                      $$.t=T_ERROR;
-              } else if(($1== ||  ) && $2.t!=T_ENTERO){ 
-
-
-//aqui hay que comprobar si se usan los tipos de ints con +-, y los logicos con la negacion, el resto salta error
-
-
-                     yyerror("Error en expresión unaria. La variable no es de tipo lógico.");
+              } else if(($1 == ESUM || $1 == EDIF) && $2.t != T_ENTERO){
+                     yyerror("Error en expresión unaria. La variable no es de tipo entero.");
                      $$.t=T_ERROR;
               }
        }
@@ -378,6 +381,8 @@ expreUna
               }else{
                      $$.t = sim.t;
               }
+		$$.d = creaVarTemp();
+		emite($1,crArgPos(sim.n,sim.d),crArgEnt(1), crArgPos(niv,$$.d));
        }
        ;
 expreSufi
@@ -424,9 +429,9 @@ expreSufi
               			if (cam.t == T_ERROR) {
               	       			yyerror("No existe ningun campo con ese identificador en ese struct.");
               			} else {
-              	       			$$.t = cam.t;
-					$$.d = creaVarTemp();
-					emite($2,crArgPos(sim.n,sim.d + cam.d),crArgPos(niv,$3.d), crArgPos(niv,$$.d));
+                                   $$.t = cam.t;
+                                   $$.d = creaVarTemp();
+                                   emite(EASIG,crArgPos(sim.n,sim.d + cam.d),crArgPos(niv,$3.d), crArgPos(niv,$$.d));
               			}
 			}
 		}
@@ -441,6 +446,9 @@ expreSufi
 			} else {
 				DIM dim = obtTdA(sim.ref);
 				$$.t = dim.telem;
+                emite(EMULT, crArgPos(niv,$3.d),crArgEnt(TALLA_TIPO_SIMPLE), crArgPos(niv,$3.d));
+				$$.d = creaVarTemp();
+                emite(EAV,crArgPos(sim.n,sim.d), crArgPos(niv,$3.d),  crArgPos(niv,$$.d));
 			}
 		}
        | ID_ OPENPAR_ paramAct CLOSEPAR_
@@ -461,8 +469,8 @@ expreSufi
        ;
 const
        : CTE_               {$$.t = T_ENTERO; $$.d = $1;}
-       | TRUE_              {$$.t = T_LOGICO; &&.d = 1;}
-       | FALSE_             {$$.t = T_LOGICO; &&.d = 0;}
+       | TRUE_              {$$.t = T_LOGICO; $$.d = 1;}
+       | FALSE_             {$$.t = T_LOGICO; $$.d = 0;}
        ;
 paramAct
        : {$$ = insTdD(-1,T_VACIO);}
@@ -493,8 +501,8 @@ opRel
        | COMPMAYORIG_        {$$ = OP_MAYORIG;}
        ;
 opAd
-       : OPSUMA_             {$$ = OP_SUMA;}
-       | OPRESTA_            {$$ = OP_RESTA;}
+       : OPSUMA_             {$$ = ESUM;}
+       | OPRESTA_            {$$ = EDIF;}
        ;
 opMul
        : OPMULT_             {$$ = OP_MULT;}
@@ -506,7 +514,7 @@ opUna
        | OPNOT_              {$$ = OP_NOT;}
        ;
 opIncre
-       : OPINCREASE_         {$$ = OP_INCR;}
-       | OPDECREASE_         {$$ = OP_DECR;}
+       : OPINCREASE_         {$$ = ESUM;}
+       | OPDECREASE_         {$$ = EDIF;}
        ;
 %%
