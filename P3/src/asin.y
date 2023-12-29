@@ -258,7 +258,7 @@ instIter
        }
        ;
 expre
-       : expreLogic {$$.t=$1.t;}
+       : expreLogic {$$.t=$1.t;$$.d=$1.d;}
        | ID_ OPIGUAL_ expre {
               SIMB sim = obtTdS($1);
               $$.t = T_ERROR;
@@ -318,7 +318,7 @@ expre
        }
        ;
 expreLogic
-       : expreIgual {$$.t=$1.t;}
+       : expreIgual {$$.t=$1.t;$$.d=$1.d;}
        | expreLogic opLogic expreIgual {
               $$.t = T_ERROR;
               if($1.t!=T_ERROR && $3.t!=T_ERROR){
@@ -336,7 +336,7 @@ expreLogic
        }
        ;
 expreIgual
-       : expreRel {$$.t=$1.t;}
+       : expreRel {$$.t=$1.t;$$.d=$1.d;}
        | expreIgual opIgual expreRel {
               $$.t = T_ERROR;
               if($1.t!=T_ERROR && $3.t!=T_ERROR){
@@ -354,7 +354,7 @@ expreIgual
        }
        ;
 expreRel
-       : expreAd {$$.t=$1.t;}
+       : expreAd {$$.t=$1.t;$$.d=$1.d;}
        | expreRel opRel expreAd {
               $$.t = T_ERROR;
               if($1.t!=T_ERROR && $3.t!=T_ERROR){
@@ -372,7 +372,7 @@ expreRel
        }
        ;
 expreAd
-       : expreMul {$$.t=$1.t;}
+       : expreMul {$$.t=$1.t; $$.d=$1.d;}
        | expreAd opAd expreMul {
               $$.t = T_ERROR;
               if($1.t!=T_ERROR && $3.t!=T_ERROR){
@@ -388,7 +388,7 @@ expreAd
        }
        ;
 expreMul
-       : expreUna {$$.t=$1.t;}
+       : expreUna {$$.t=$1.t; $$.d=$1.d;}
        | expreMul opMul expreUna {
               $$.t = T_ERROR;
               if($1.t!=T_ERROR && $3.t!=T_ERROR){
@@ -404,7 +404,7 @@ expreMul
        }
        ;
 expreUna
-       : expreSufi {$$.t=$1.t;}
+       : expreSufi {$$.t=$1.t; $$.d=$1.d;}
        | opUna expreUna {
               $$.t=$2.t;
               if($1==OP_NOT && $2.t!=T_LOGICO){
