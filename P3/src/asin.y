@@ -293,8 +293,7 @@ expre
                             yyerror("Incompatibilidad de tipos en la asignación.");
                      } else{
                             $$.t = dim.telem;
-                            $$.t = dim.telem;
-                            emite(EMULT, crArgPos(niv,$3.d),crArgEnt(TALLA_TIPO_SIMPLE), crArgPos(niv,$3.d));
+                            emite(EMULT, crArgPos(niv,$3.d),crArgEnt(TALLA_TIPO_SIMPLE), crArgPos(niv,$3.d)); // EVA -> arg1[arg2] = res, por lo tanto esto es innecesario
                             emite(EVA,crArgPos(sim.n,sim.d), crArgPos(niv,$3.d),  crArgPos(niv,$6.d));
                      }
               }
@@ -434,7 +433,8 @@ expreUna
                      $$.t = sim.t;
               }
 		$$.d = creaVarTemp();
-		emite($1,crArgPos(sim.n,sim.d),crArgEnt(1), crArgPos(niv,$$.d));
+		emite($1,crArgPos(sim.n,sim.d),crArgEnt(1), crArgPos(sim.n,sim.d));
+		emite(EASIG, crArgPos(sim.n, sim.d), crArgNul(), crArgPos(niv, $$.d));
        }
        ;
 expreSufi
@@ -470,7 +470,9 @@ expreSufi
 			} else {
 				yyerror("Incompatibilidad de tipos, solo se puede aplicar el operador \"++\" o \"--\" a una expresion entera.");
 			}
-			//falta el emite
+			$$.d = creaVarTemp();
+			emite(EASIG, crArgPos(sim.n, sim.d), crArgNul(), crArgPos(niv, $$.d));
+			emite($2, crArgPos(sim.n, sim.d), crArgEnt(1), crArgPos(sim.n,sim.d));
 		}
        | ID_ PUNTO_ ID_
 		{
@@ -502,10 +504,11 @@ expreSufi
 			} else {
 				DIM dim = obtTdA(sim.ref);
 				$$.t = dim.telem;
-                emite(EMULT, crArgPos(niv,$3.d),crArgEnt(TALLA_TIPO_SIMPLE), crArgPos(niv,$3.d));
-				$$.d = creaVarTemp();
-                emite(EAV,crArgPos(sim.n,sim.d), crArgPos(niv,$3.d),  crArgPos(niv,$$.d));
+                //emite(EMULT, crArgPos(niv,$3.d),crArgEnt(TALLA_TIPO_SIMPLE), crArgPos(niv,$3.d));
+
 			}
+			$$.d = creaVarTemp();
+              emite(EAV,crArgPos(sim.n,sim.d), crArgPos(niv,$3.d),  crArgPos(niv,$$.d));
 		}
        | ID_ {
 
