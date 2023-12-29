@@ -3,6 +3,7 @@
 #include <string.h>
 #include "header.h"
 #include "libtds.h"
+#include "libgci.h"
 %}
 
 %union {
@@ -130,10 +131,11 @@ declaFunc
               if($12.t != $1){
                      yyerror("Tipo de return distinto al de la declaración de la función");
               }
-              INF inf = obtTdD($2);
+              SIMB sim = obtTdS($2);
+              INF inf = obtTdD(sim.ref);
               int dvr=TALLA_SEGENLACES+inf.tsp+TALLA_TIPO_SIMPLE;
               emite(EASIG, crArgPos(niv, $12.d), crArgNul(), crArgPos(niv, -dvr));
-              completaLans($<cent>7,dvar);
+              completaLans($<cent>7,crArgEnt(dvar));
               emite(TOPFP,crArgNul(),crArgNul(),crArgNul());
               emite(FPPOP,crArgNul(),crArgNul(),crArgNul());
 
@@ -233,10 +235,10 @@ instSelec
        inst {
               $<cent>$=creaLans(si); //fin
               emite(GOTOS,crArgNul(),crArgNul(), crArgEtq(-1));
-              completaLans($<cent>5,si);
+              completaLans($<cent>5,crArgEnt(si));
        }
        ELSE_ inst {
-              completaLans($<cent>7,si);
+              completaLans($<cent>7,crArgEnt(si));
        }
        ;
 instIter
@@ -252,7 +254,7 @@ instIter
               }
        inst {
               emite(GOTOS,crArgNul(),crArgNul(), crArgEtq($<cent>2));
-              completaLans($<cent>6,si);
+              completaLans($<cent>6,crArgEnt(si));
        }
        ;
 expre
@@ -311,7 +313,7 @@ expre
                             yyerror("Incompatibilidad de tipos en la asignación.");
                      } else{
                             $$.t = $5.t;
-                            emite(EASIG,crArgPos(niv, $5.d),crArgNul(), crArgPos(sim.n,sim.d + cam.d));
+                            emite(EASIG,crArgPos(niv, $5.d),crArgNul(), crArgPos(sim.n,sim.d + camp.d));
                      }
               }
        }
@@ -439,7 +441,7 @@ expreSufi
        : const                    {
 		$$.t = $1.t;
 		$$.d = creaVarTemp();
-		emite( EASIG , crArgEnt($1) , crArgNul() , crArgPos(niv,$$.d));
+		emite( EASIG , crArgEnt($1.d) , crArgNul() , crArgPos(niv,$$.d));
 	}
        | OPENPAR_ expre CLOSEPAR_ {
               $$.t = $2.t;
@@ -468,6 +470,7 @@ expreSufi
 			} else {
 				yyerror("Incompatibilidad de tipos, solo se puede aplicar el operador \"++\" o \"--\" a una expresion entera.");
 			}
+			//falta el emite
 		}
        | ID_ PUNTO_ ID_
 		{
@@ -484,7 +487,7 @@ expreSufi
               			} else {
                                    $$.t = cam.t;
                                    $$.d = creaVarTemp();
-                                   emite(EASIG,crArgPos(sim.n,sim.d + cam.d),crArgPos(niv,$3.d), crArgPos(niv,$$.d));
+                                   emite(EASIG,crArgPos(sim.n,sim.d + cam.d),crArgPos(niv,cam.d), crArgPos(niv,$$.d));
               			}
 			}
 		}
@@ -505,6 +508,11 @@ expreSufi
 			}
 		}
        | ID_ {
+
+              emite(INCTOP,crArgNul(),crArgNul(),crArgEnt(TALLA_TIPO_SIMPLE));
+       }
+       OPENPAR_ paramAct CLOSEPAR_
+       {
               $$.t = T_ERROR;
               SIMB sim = obtTdS($1);
               INF inf = obtTdD(sim.ref);
@@ -513,12 +521,6 @@ expreSufi
               } else if (sim.c != FUNCION) {
                      yyerror("No existe ninguna función con ese identificador.");
               }
-              emite(INCTOP,crArgNul(),crArgNul(),crArgEnt(TALLA_TIPO_SIMPLE));
-       }
-       OPENPAR_ paramAct CLOSEPAR_
-       {
-              SIMB sim = obtTdS($1);
-              INF inf = obtTdD(sim.ref);
 			 if (!cmpDom(sim.ref, $4)) {
                 		yyerror("Parámetros de la función incorrectos");
 			} else {
