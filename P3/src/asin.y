@@ -20,14 +20,14 @@
 %token TRUE_ FALSE_ BOOL_
 %token <cent> CTE_ INT_
 %token <ident> ID_
-%type <cent> tipoSimp declaFunc listDecla decla opIncre opUna opMul opAd opRel opIgual opLogic listParamAct paramAct
+%type <cent> tipoSimp declaFunc listDecla decla opIncre opUna opMul opAd opRel opIgual opLogic listParamAct paramAct instSelec instIter
 %type <dosv> listCamp listParamForm paramForm
 %type <tipo> const expreSufi expre expreLogic expreAd expreIgual expreMul expreRel expreUna
 
 %%
 
 programa
-       : { dvar = 0; niv = 0; cargaContexto(niv); } listDecla
+       : { dvar = 0; niv = 0; cargaContexto(niv); si=0;} listDecla
        {
               if($2 >= 0){
                      yyerror("No hay una función main");
@@ -109,9 +109,13 @@ declaFunc
          }
          OPENPAR_ paramForm CLOSEPAR_
          {
-              if(!insTdS($2, FUNCION, $1, niv-1, -1, $5.ref1)){
+              if(!insTdS($2, FUNCION, $1, niv-1, si, $5.ref1)){
                      yyerror("Identificador de la función repetido.");
               }
+              emite(PUSHFP,crArgNul(),crArgNul(),crArgNul());
+              emite(FPTOP,crArgNul(),crArgNul(),crArgNul());
+              $<cent>$=creaLans(si);
+              emite(INCTOP,crArgNul(),crArgNul(),crArgEnt(-1));
          }
          OPENLLAVE_ declaVarLocal listInst RETURN_ expre SEMICOLON_ CLOSELLAVE_
          {
@@ -126,6 +130,15 @@ declaFunc
               if($12.t != $1){
                      yyerror("Tipo de return distinto al de la declaración de la función");
               }
+              INF inf = obtTdD($2);
+              int dvr=TALLA_SEGENLACES+inf.tsp+TALLA_TIPO_SIMPLE;
+              emite(EASIG, crArgPos(niv, $12.d), crArgNul(), crArgPos(niv, -dvr));
+              completaLans($<cent>7,dvar);
+              emite(TOPFP,crArgNul(),crArgNul(),crArgNul());
+              emite(FPPOP,crArgNul(),crArgNul(),crArgNul());
+
+              if ($$ == -1) { emite(FIN, crArgNul(), crArgNul(), crArgNul()); }
+              else { emite(RET, crArgNul(), crArgNul(), crArgNul()); }
 
               if(verTdS) {
                       mostrarTdS();
@@ -155,10 +168,13 @@ listParamForm
 		if(!insTdS($2, PARAMETRO, $1, niv, -$$.ref2, $$.ref1)){
               yyerror("Parámetro de la función repetido.");
 		}
-	}
-       | tipoSimp ID_ COMA_ listParamForm {
-		$$.ref1 = insTdD($4.ref1, $1);
-		$$.ref2 = $4.ref2 + TALLA_TIPO_SIMPLE;
+		emite(EPUSH,crArgNul(),crArgNul(),crArgPos(niv,$$.ref2));
+       }
+       | tipoSimp ID_ COMA_{
+              emite(EPUSH,crArgNul(),crArgNul(),crArgEnt(TALLA_TIPO_SIMPLE));
+       }listParamForm {
+		$$.ref1 = insTdD($5.ref1, $1);
+		$$.ref2 = $5.ref2 + TALLA_TIPO_SIMPLE;
 		if(!insTdS($2, PARAMETRO, $1, niv, -$$.ref2, $$.ref1)){
               yyerror("Parámetro de la función repetido.");
 		}
@@ -195,28 +211,49 @@ instEntSal
               else if(sim.t != T_ENTERO){
                      yyerror("El objeto a leer no es de tipo entero.");
               }
+              emite(EREAD, crArgNul(), crArgNul(),crArgPos(sim.n , sim.d));
        }
        | PRINT_ OPENPAR_ expre CLOSEPAR_ SEMICOLON_{
 
               if( $3.t != T_ERROR && $3.t != T_ENTERO){
                       yyerror("El argumento del 'print' no es de tipo entero.");
               }
+              emite(EWRITE, crArgNul(), crArgNul(), crArgPos(niv, $3.d));
        }
        ;
 instSelec
-       : IF_ OPENPAR_ expre CLOSEPAR_ inst ELSE_ inst {
+       : IF_ OPENPAR_ expre CLOSEPAR_
+       {
               if($3.t!=T_ERROR && $3.t!=T_LOGICO){
                      yyerror("La expresión del 'if' debe ser de tipo lógico.");
               }
+              $<cent>$=creaLans(si); //lf
+              emite(EIGUAL,crArgPos(niv, $3.d),crArgEnt(0), crArgEtq(-1));
+       }
+       inst {
+              $<cent>$=creaLans(si); //fin
+              emite(GOTOS,crArgNul(),crArgNul(), crArgEtq(-1));
+              completaLans($<cent>5,si);
+       }
+       ELSE_ inst {
+              completaLans($<cent>7,si);
        }
        ;
 instIter
-       : WHILE_ OPENPAR_ expre {
-                     if($3.t!=T_ERROR && $3.t!=T_LOGICO){
-                            yyerror("La expresión del 'while' debe ser de tipo lógico.");
-                     }
+       : WHILE_{
+              $<cent>$=si;
+       }
+       OPENPAR_ expre CLOSEPAR_ {
+              if($4.t!=T_ERROR && $4.t!=T_LOGICO){
+                     yyerror("La expresión del 'while' debe ser de tipo lógico.");
               }
-       CLOSEPAR_ inst
+              $<cent>$=creaLans(si); //lf
+              emite(EIGUAL,crArgPos(niv, $4.d),crArgEnt(0), crArgEtq(-1));
+              }
+       inst {
+              emite(GOTOS,crArgNul(),crArgNul(), crArgEtq($<cent>2));
+              completaLans($<cent>6,si);
+       }
        ;
 expre
        : expreLogic {$$.t=$1.t;}
@@ -234,6 +271,8 @@ expre
                             $$.t=sim.t;
                      }
               }
+       emite(EASIG,crArgPos(niv, $3.d),crArgNul(), crArgPos(sim.n,sim.d));
+
        }
        | ID_ OPENCORCH_ expre CLOSECORCH_ OPIGUAL_ expre {
               SIMB sim = obtTdS($1);
@@ -308,7 +347,9 @@ expreIgual
                      }
               }
 		$$.d = creaVarTemp();
-		emite($2,crArgPos(niv,$1.d),crArgPos(niv,$3.d), crArgPos(niv,$$.d));
+		emite(EASIG,crArgEnt(1),crArgNul(), crArgPos(niv,$$.d));
+		emite($2,crArgPos(niv,$1.d),crArgPos(niv,$3.d), crArgEtq(si+2));
+		emite(EASIG,crArgEnt(0),crArgNul(), crArgPos(niv,$$.d));
        }
        ;
 expreRel
@@ -324,7 +365,9 @@ expreRel
                      }
               }
 		$$.d = creaVarTemp();
-		emite($2,crArgPos(niv,$1.d),crArgPos(niv,$3.d), crArgPos(niv,$$.d));
+		emite(EASIG,crArgEnt(1),crArgNul(), crArgPos(niv,$$.d));
+		emite($2,crArgPos(niv,$1.d),crArgPos(niv,$3.d), crArgEtq(si+2));
+		emite(EASIG,crArgEnt(0),crArgNul(), crArgPos(niv,$$.d));
        }
        ;
 expreAd
@@ -370,6 +413,13 @@ expreUna
                      yyerror("Error en expresión unaria. La variable no es de tipo entero.");
                      $$.t=T_ERROR;
               }
+              $$.d = creaVarTemp();
+              if ($1==ESIG){
+                     emite(EDIF,crArgEnt(1),crArgPos(niv,$2.d), crArgPos(niv,$$.d));
+              } else{
+                     emite($1,crArgEnt(0),crArgPos(niv,$2.d), crArgPos(niv,$$.d));
+              }
+
        }
        | opIncre ID_ {
               SIMB sim = obtTdS($2);
@@ -391,7 +441,10 @@ expreSufi
 		$$.d = creaVarTemp();
 		emite( EASIG , crArgEnt($1) , crArgNul() , crArgPos(niv,$$.d));
 	}
-       | OPENPAR_ expre CLOSEPAR_ {$$.t = $2.t;}
+       | OPENPAR_ expre CLOSEPAR_ {
+              $$.t = $2.t;
+              $$.d=$2.d;
+       }
        | ID_
               {
               $$.t = T_ERROR;
@@ -451,20 +504,31 @@ expreSufi
                 emite(EAV,crArgPos(sim.n,sim.d), crArgPos(niv,$3.d),  crArgPos(niv,$$.d));
 			}
 		}
-       | ID_ OPENPAR_ paramAct CLOSEPAR_
-		{
-			$$.t = T_ERROR;
-			SIMB sim = obtTdS($1);
-			INF inf = obtTdD(sim.ref);
-			if (sim.t == T_ERROR) {
-				yyerror("No existe ninguna variable con ese identificador.");
-			} else if (sim.c != FUNCION) {
-				yyerror("No existe ninguna función con ese identificador.");
-			} else if (!cmpDom(sim.ref, $3)) {
+       | ID_ {
+              $$.t = T_ERROR;
+              SIMB sim = obtTdS($1);
+              INF inf = obtTdD(sim.ref);
+              if (sim.t == T_ERROR) {
+                     yyerror("No existe ninguna variable con ese identificador.");
+              } else if (sim.c != FUNCION) {
+                     yyerror("No existe ninguna función con ese identificador.");
+              }
+              emite(INCTOP,crArgNul(),crArgNul(),crArgEnt(TALLA_TIPO_SIMPLE));
+       }
+       OPENPAR_ paramAct CLOSEPAR_
+       {
+              SIMB sim = obtTdS($1);
+              INF inf = obtTdD(sim.ref);
+			 if (!cmpDom(sim.ref, $4)) {
                 		yyerror("Parámetros de la función incorrectos");
 			} else {
 				$$.t = inf.tipo;
 			}
+			emite(EPUSH,crArgNul(),crArgNul(),crArgEnt(si+2));
+			emite(CALL,crArgNul(),crArgNul(),crArgEnt(sim.d));
+			emite(DECTOP,crArgNul(),crArgNul(),crArgEnt(inf.tsp));
+			$$.d=creaVarTemp();
+			emite(EPOP,crArgNul(),crArgNul(),crArgPos(niv,$$.d));
 		}
        ;
 const
@@ -491,27 +555,27 @@ opLogic
        | OPOR_               {$$ = OP_OR;}
        ;
 opIgual
-       : COMPIGUAL_          {$$ = OP_IGUAL;}
-       | COMPDIF_            {$$ = OP_NOTIGUAL;}
+       : COMPIGUAL_          {$$ = EIGUAL;}
+       | COMPDIF_            {$$ = EDIST;}
        ;
 opRel
-       : COMPMENOR_          {$$ = OP_MENOR;}
-       | COMPMENORIG_        {$$ = OP_MENORIG;}
-       | COMPMAYOR_          {$$ = OP_MAYOR;}
-       | COMPMAYORIG_        {$$ = OP_MAYORIG;}
+       : COMPMENOR_          {$$ = EMEN;}
+       | COMPMENORIG_        {$$ = EMENEQ;}
+       | COMPMAYOR_          {$$ = EMAY;}
+       | COMPMAYORIG_        {$$ = EMAYEQ;}
        ;
 opAd
        : OPSUMA_             {$$ = ESUM;}
        | OPRESTA_            {$$ = EDIF;}
        ;
 opMul
-       : OPMULT_             {$$ = OP_MULT;}
-       | OPDIV_              {$$ = OP_DIV;}
+       : OPMULT_             {$$ = EMULT;}
+       | OPDIV_              {$$ = EDIVI;}
        ;
 opUna
-       : OPSUMA_             {$$ = OP_SUMA;}
-       | OPRESTA_            {$$ = OP_RESTA;}
-       | OPNOT_              {$$ = OP_NOT;}
+       : OPSUMA_             {$$ = ESUM;}
+       | OPRESTA_            {$$ = EDIF;}
+       | OPNOT_              {$$ = ESIG;}
        ;
 opIncre
        : OPINCREASE_         {$$ = ESUM;}
