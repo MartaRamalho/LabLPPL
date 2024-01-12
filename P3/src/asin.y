@@ -11,6 +11,7 @@
        int cent; /* Valor de la cte num´erica entera */
        DOSV dosv;
        TIPO tipo;
+       AUX aux;
 }
 
 %token OPSUMA_ OPRESTA_ OPMULT_ OPDIV_ OPAND_ OPDECREASE_ OPIGUAL_ OPINCREASE_ OPNOT_ OPOR_
@@ -28,13 +29,28 @@
 %%
 
 programa
-       : { dvar = 0; niv = 0; cargaContexto(niv); si=0;} listDecla
+       : {
+              dvar = 0; niv = 0; si=0;
+              cargaContexto(niv);
+              $<aux>$.r1 = creaLans(si);
+              emite(INCTOP, crArgNul(), crArgNul(), crArgEnt(-1));
+              $<aux>$.r2 = creaLans(si);
+              emite(GOTOS, crArgNul(), crArgNul(), crArgEtq(-1));
+
+       } listDecla
        {
               if($2 >= 0){
                      yyerror("No hay una función main");
               } else if ($2 < -1) {
                      yyerror("Hay más de una función main");
               }
+
+              completaLans($<aux>1.r1, crArgEnt(dvar));
+
+              SIMB sim = obtTdS("main");
+              $<aux>$.r3 = sim.d;
+
+              completaLans($<aux>1.r2, crArgEtq($<aux>$.r3));
        }
        ;
 
@@ -170,10 +186,10 @@ listParamForm
 		if(!insTdS($2, PARAMETRO, $1, niv, -$$.ref2, $$.ref1)){
               yyerror("Parámetro de la función repetido.");
 		}
-		emite(EPUSH,crArgNul(),crArgNul(),crArgPos(niv,$$.ref2));
+		//emite(EPUSH,crArgNul(),crArgNul(),crArgPos(niv,$$.ref2)); esto estaba muy mal, es en paramAct, no form
        }
        | tipoSimp ID_ COMA_{
-              emite(EPUSH,crArgNul(),crArgNul(),crArgEnt(TALLA_TIPO_SIMPLE));
+              //emite(EPUSH,crArgNul(),crArgNul(),crArgEnt(TALLA_TIPO_SIMPLE));
        }listParamForm {
 		$$.ref1 = insTdD($5.ref1, $1);
 		$$.ref2 = $5.ref2 + TALLA_TIPO_SIMPLE;
@@ -296,7 +312,6 @@ expre
                      } else{
                             $$.t = dim.telem;
                             $$.d = creaVarTemp();
-                            emite(EMULT, crArgPos(niv,$3.d),crArgEnt(TALLA_TIPO_SIMPLE), crArgPos(niv,$3.d)); // EVA -> arg1[arg2] = res, por lo tanto esto es innecesario
                             emite(EVA,crArgPos(sim.n,sim.d), crArgPos(niv,$3.d),  crArgPos(niv,$6.d));
                             emite(EASIG, crArgPos(niv, $6.d), crArgNul(), crArgPos(niv, $$.d));
                      }
@@ -416,15 +431,17 @@ expreUna
               if($1==OP_NOT && $2.t!=T_LOGICO){
                      yyerror("Error en expresión unaria. La variable no es de tipo lógico.");
                      $$.t=T_ERROR;
-              } else if(($1 == ESUM || $1 == EDIF) && $2.t != T_ENTERO){
+              } else if(($1 == OP_MAS || $1 == OP_MENOS) && $2.t != T_ENTERO){
                      yyerror("Error en expresión unaria. La variable no es de tipo entero.");
                      $$.t=T_ERROR;
               }
               $$.d = creaVarTemp();
-              if ($1==ESIG){
+              if ($1==OP_NOT){
                      emite(EDIF,crArgEnt(1),crArgPos(niv,$2.d), crArgPos(niv,$$.d));
-              } else{
-                     emite($1,crArgEnt(0),crArgPos(niv,$2.d), crArgPos(niv,$$.d));
+              } else if ($1 == OP_MENOS) {
+                     emite(ESIG,crArgPos(niv,$2.d),crArgNul(), crArgPos(niv,$$.d));
+              } else {
+                     $$.d = $2.d;
               }
 
        }
@@ -514,7 +531,7 @@ expreSufi
 
 			}
 			$$.d = creaVarTemp();
-              emite(EAV,crArgPos(sim.n,sim.d), crArgPos(niv,$3.d),  crArgPos(niv,$$.d));
+            emite(EAV,crArgPos(sim.n,sim.d), crArgPos(niv,$3.d),  crArgPos(niv,$$.d));
 		}
        | ID_ {
 
@@ -535,7 +552,7 @@ expreSufi
 			} else {
 				$$.t = inf.tipo;
 			}
-			emite(EPUSH,crArgNul(),crArgNul(),crArgEnt(si+2));
+			//emite(EPUSH,crArgNul(),crArgNul(),crArgEnt(si+2));
 			emite(CALL,crArgNul(),crArgNul(),crArgEnt(sim.d));
 			emite(DECTOP,crArgNul(),crArgNul(),crArgEnt(inf.tsp));
 			$$.d=creaVarTemp();
@@ -556,9 +573,12 @@ paramAct
 listParamAct
        : expre {
               $$=insTdD(-1, $1.t);
+              emite(EPUSH,crArgNul(),crArgNul(),crArgPos(niv,$1.d));
        }
-       | expre COMA_ listParamAct {
-              $$=insTdD($3, $1.t);
+       | expre COMA_{
+              emite(EPUSH,crArgNul(),crArgNul(),crArgPos(niv,$1.d));
+       } listParamAct {
+              $$=insTdD($4, $1.t);
        }
        ;
 opLogic
@@ -584,9 +604,9 @@ opMul
        | OPDIV_              {$$ = EDIVI;}
        ;
 opUna
-       : OPSUMA_             {$$ = ESUM;}
-       | OPRESTA_            {$$ = EDIF;}
-       | OPNOT_              {$$ = ESIG;}
+       : OPSUMA_             {$$ = OP_MAS;}
+       | OPRESTA_            {$$ = OP_MENOS;}
+       | OPNOT_              {$$ = OP_NOT;}
        ;
 opIncre
        : OPINCREASE_         {$$ = ESUM;}
