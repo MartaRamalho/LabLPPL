@@ -13,8 +13,8 @@
 #define TALLA_SEGENLACES 2
 
 #define OP_NOT 0
-#define OP_SUMA 1
-#define OP_RESTA 2
+#define OP_MAS 1
+#define OP_MENOS 2
 #define OP_MULT 3
 #define OP_DIV 4
 #define OP_INCR 5
@@ -39,6 +39,13 @@ typedef struct tipo  /* Estructura para las funciones                         */
   int   t;                            /* Tipo del rango de la funcion     */
   int   d;
 }TIPO;
+
+typedef struct aux  /* Estructura para las funciones                         */
+{
+  int   r1;                            /* Tipo del rango de la funcion     */
+  int   r2;
+  int   r3;
+}AUX;
 
 
 
